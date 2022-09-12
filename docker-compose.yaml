@@ -1,0 +1,26 @@
+---
+version: "3.4"
+services:
+  confidential_backend:
+    depends_on:
+      - redis
+    image: "uwcirg/confidential_backend:${DOCKER_IMAGE_TAG:-develop}"
+    build:
+      context: .
+    volumes:
+      - ./:/opt/app
+      # mount host certificate bundle into container
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      # mount host hosts file into container
+      - /etc/hosts:/etc/hosts:ro
+    ports:
+      # allow override of published port
+      - ${P_PORT:-8000}:8000
+    environment:
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+      SESSION_REDIS: redis://redis:6379/0
+    env_file:
+      - confidential_backend.env
+
+  redis:
+    image: redis

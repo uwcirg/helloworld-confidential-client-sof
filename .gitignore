@@ -1,0 +1,8 @@
+__pycache__
+*.env
+.eggs
+.tox
+coverage.xml
+*.egg-info
+tests/.coverage
+
