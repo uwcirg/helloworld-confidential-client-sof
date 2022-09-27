@@ -2,9 +2,9 @@ import requests
 
 from flask import Blueprint, current_app, g, request
 
-from confidential_backend.audit import audit_entry
-from confidential_backend.jsonify_abort import jsonify_abort
-from confidential_backend.wrapped_session import get_session_value
+from src.audit import audit_entry
+from src.jsonify_abort import jsonify_abort
+from src.wrapped_session import get_session_value
 
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'

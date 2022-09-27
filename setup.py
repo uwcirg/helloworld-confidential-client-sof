@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(
-    name="confidential_backend",
-    packages=["confidential_backend"],
+    name="isacc_messaging",
+    packages=["isacc_messaging"],
     include_package_data=True,
 )
