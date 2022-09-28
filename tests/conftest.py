@@ -3,7 +3,7 @@ from pytest import fixture
 
 @fixture
 def app():
-    from confidential_backend.app import create_app
+    from isacc_messaging.app import create_app
     return create_app(testing=True)
 
 

@@ -5,16 +5,16 @@ from logging import config as logging_config
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from src import auth, api
-from src.audit import audit_entry, audit_log_init
-from src.extensions import oauth, sess
+from isacc_messaging import auth, api
+from isacc_messaging.audit import audit_entry, audit_log_init
+from isacc_messaging.extensions import oauth, sess
 
 
 def create_app(testing=False, cli=False):
     """Application factory, used to create application
     """
     app = Flask('isacc_messaging')
-    app.config.from_object('src.config')
+    app.config.from_object('isacc_messaging.config')
     app.config['TESTING'] = testing
     CORS(app)
 

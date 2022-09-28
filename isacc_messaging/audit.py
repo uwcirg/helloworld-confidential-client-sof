@@ -6,8 +6,8 @@ from copy import deepcopy
 from flask import current_app, has_app_context
 import logging
 
-from src.logserverhandler import LogServerHandler
-from src.wrapped_session import get_session_value
+from isacc_messaging.logserverhandler import LogServerHandler
+from isacc_messaging.wrapped_session import get_session_value
 
 EVENT_LOG_NAME = "isacc_messaging_event_logger"
 

@@ -4,7 +4,7 @@ import logging
 import os
 import uuid
 
-from src.audit import audit_entry
+from isacc_messaging.audit import audit_entry
 
 base_blueprint = Blueprint('base', __name__)
 
