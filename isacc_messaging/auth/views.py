@@ -1,9 +1,9 @@
 from flask import Blueprint, current_app, redirect, request, url_for, session
 import requests
 
-from confidential_backend.audit import audit_entry
-from confidential_backend.auth.helpers import extract_payload, format_as_jwt
-from confidential_backend.extensions import oauth
+from isacc_messaging.audit import audit_entry
+from isacc_messaging.auth.helpers import extract_payload, format_as_jwt
+from isacc_messaging.extensions import oauth
 
 
 # SMIT launch token encoding scheme

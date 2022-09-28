@@ -1,10 +1,10 @@
 ---
 version: "3.4"
 services:
-  confidential_backend:
+  messaging:
     depends_on:
       - redis
-    image: "uwcirg/confidential_backend:${DOCKER_IMAGE_TAG:-develop}"
+    image: "uwcirg/isacc_messaging_backend:${DOCKER_IMAGE_TAG:-latest}"
     build:
       context: .
     volumes:
@@ -20,7 +20,7 @@ services:
       REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
       SESSION_REDIS: redis://redis:6379/0
     env_file:
-      - confidential_backend.env
+      - messaging.env
 
   redis:
     image: redis

@@ -5,16 +5,16 @@ from logging import config as logging_config
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from confidential_backend import auth, api
-from confidential_backend.audit import audit_entry, audit_log_init
-from confidential_backend.extensions import oauth, sess
+from isacc_messaging import auth, api
+from isacc_messaging.audit import audit_entry, audit_log_init
+from isacc_messaging.extensions import oauth, sess
 
 
 def create_app(testing=False, cli=False):
     """Application factory, used to create application
     """
-    app = Flask('confidential_backend')
-    app.config.from_object('confidential_backend.config')
+    app = Flask('isacc_messaging')
+    app.config.from_object('isacc_messaging.config')
     app.config['TESTING'] = testing
     CORS(app)
 
@@ -37,7 +37,7 @@ def configure_logging(app):
     logging_config.fileConfig(config, disable_existing_loggers=False)
     app.logger.setLevel(getattr(logging, app.config['LOG_LEVEL'].upper()))
     app.logger.debug(
-        "confidential backend logging initialized",
+        "isacc messaging service logging initialized",
         extra={'tags': ['testing', 'logging', 'app']})
 
     if not app.config['LOGSERVER_URL']:
@@ -45,7 +45,7 @@ def configure_logging(app):
 
     audit_log_init(app)
     audit_entry(
-        "confidential backend logging initialized",
+        "isacc messaging service logging initialized",
         extra={'tags': ['testing', 'logging', 'events'],
             'version': app.config['VERSION_STRING']})
 

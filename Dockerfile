@@ -10,7 +10,7 @@ RUN pip install --requirement requirements.txt
 
 COPY . .
 
-ENV FLASK_APP=confidential_backend.app:create_app() \
+ENV FLASK_APP=isacc_messaging.app:create_app() \
     PORT=8000
 
 EXPOSE "${PORT}"

@@ -1,5 +1,5 @@
 from pytest import fixture
-from confidential_backend.auth.helpers import extract_payload, format_as_jwt
+from isacc_messaging.auth.helpers import extract_payload, format_as_jwt
 
 @fixture
 def encoded_payload():

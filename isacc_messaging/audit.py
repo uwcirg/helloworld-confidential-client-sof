@@ -6,10 +6,10 @@ from copy import deepcopy
 from flask import current_app, has_app_context
 import logging
 
-from confidential_backend.logserverhandler import LogServerHandler
-from confidential_backend.wrapped_session import get_session_value
+from isacc_messaging.logserverhandler import LogServerHandler
+from isacc_messaging.wrapped_session import get_session_value
 
-EVENT_LOG_NAME = "confidential_backend_event_logger"
+EVENT_LOG_NAME = "isacc_messaging_event_logger"
 
 
 def audit_log_init(app):
