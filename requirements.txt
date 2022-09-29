@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt
 #
-authlib==0.14.3           # via confidential_backend (setup.py)
+authlib==0.14.3           # via isacc_messaging (setup.py)
 cachelib==0.1.1           # via flask-session
 certifi==2021.5.30        # via requests
 cffi==1.14.1              # via cryptography
@@ -12,10 +12,10 @@ charset-normalizer==2.0.6  # via requests
 click==8.0.1              # via flask
 cryptography==3.3.2         # via authlib, python-jose
 ecdsa==0.14.1             # via python-jose
-flask-cors==3.0.10        # via confidential_backend (setup.py)
-flask-session==0.3.2      # via confidential_backend (setup.py)
-flask==1.1.2              # via flask-session, confidential_backend (setup.py)
-gunicorn==20.1.0          # via confidential_backend (setup.py)
+flask-cors==3.0.10        # via isacc_messaging (setup.py)
+flask-session==0.3.2      # via isacc_messaging (setup.py)
+flask==1.1.2              # via flask-session, isacc_messaging (setup.py)
+gunicorn==20.1.0          # via isacc_messaging (setup.py)
 idna==3.2                 # via requests
 importlib-metadata==4.8.1  # via click
 itsdangerous==2.0.1       # via flask
@@ -23,11 +23,11 @@ jinja2==3.0.1             # via flask
 markupsafe==2.0.1         # via jinja2
 pyasn1==0.4.8             # via python-jose, rsa
 pycparser==2.20           # via cffi
-python-jose[cryptography]==3.2.0  # via confidential_backend (setup.py)
-python-json-logger==0.1.11  # via confidential_backend (setup.py)
-redis==3.5.3              # via confidential_backend (setup.py)
-requests-cache==0.6.4     # via confidential_backend (setup.py)
-requests==2.26.0          # via requests-cache, confidential_backend (setup.py)
+python-jose[cryptography]==3.2.0  # via isacc_messaging (setup.py)
+python-json-logger==0.1.11  # via isacc_messaging (setup.py)
+redis==3.5.3              # via isacc_messaging (setup.py)
+requests-cache==0.6.4     # via isacc_messaging (setup.py)
+requests==2.26.0          # via requests-cache, isacc_messaging (setup.py)
 rsa==4.7                  # via python-jose
 six==1.16.0               # via ecdsa, flask-cors, url-normalize
 typing-extensions==3.10.0.2  # via importlib-metadata
