@@ -15,10 +15,10 @@ port-for==0.6.1           # via pytest-redis
 psutil==5.8.0             # via mirakuru
 py==1.10.0                # via pytest
 pyparsing==2.4.7          # via packaging
-pytest-mock==3.6.1        # via confidential_backend (setup.py)
-pytest-redis==2.1.1       # via confidential_backend (setup.py)
-pytest==6.2.5             # via pytest-mock, pytest-redis, confidential_backend (setup.py)
-requests-mock==1.9.3      # via confidential_backend (setup.py)
+pytest-mock==3.6.1        # via isacc_messaging (setup.py)
+pytest-redis==2.1.1       # via isacc_messaging (setup.py)
+pytest==6.2.5             # via pytest-mock, pytest-redis, isacc_messaging (setup.py)
+requests-mock==1.9.3      # via isacc_messaging (setup.py)
 toml==0.10.2              # via pytest
 typing-extensions==3.10.0.2  # via importlib-metadata
 zipp==3.5.0               # via importlib-metadata
