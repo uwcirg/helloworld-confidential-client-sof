@@ -1,11 +1,10 @@
 from flask import Flask
-from flask_cors import CORS
 import logging
 from logging import config as logging_config
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from isacc_messaging import auth, api
+from isacc_messaging import api
 from isacc_messaging.audit import audit_entry, audit_log_init
 from isacc_messaging.extensions import oauth, sess
 
@@ -16,7 +15,6 @@ def create_app(testing=False, cli=False):
     app = Flask('isacc_messaging')
     app.config.from_object('isacc_messaging.config')
     app.config['TESTING'] = testing
-    CORS(app)
 
     configure_logging(app)
     configure_extensions(app, cli)
@@ -60,9 +58,7 @@ def configure_extensions(app, cli):
 def register_blueprints(app):
     """register all blueprints for application
     """
-    app.register_blueprint(auth.views.blueprint)
     app.register_blueprint(api.views.base_blueprint)
-    app.register_blueprint(api.fhir.blueprint)
 
 
 def configure_proxy(app):

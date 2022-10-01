@@ -7,7 +7,6 @@ from flask import current_app, has_app_context
 import logging
 
 from isacc_messaging.logserverhandler import LogServerHandler
-from isacc_messaging.wrapped_session import get_session_value
 
 EVENT_LOG_NAME = "isacc_messaging_event_logger"
 
@@ -33,10 +32,6 @@ def audit_entry(message, level='info', extra=None):
         extra = {}
 
     if has_app_context():
-        for x in ('user', 'subject'):
-            value = get_session_value(x)
-            if value:
-                extra[x] = value
         if 'version' not in extra:
             extra['version'] = current_app.config['VERSION_STRING']
 

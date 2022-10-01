@@ -1,8 +1,5 @@
-from flask import Blueprint, current_app, jsonify, request
-import json
+from flask import Blueprint, jsonify, request
 import logging
-import os
-import uuid
 
 from isacc_messaging.audit import audit_entry
 
@@ -81,81 +78,3 @@ def auditlog_addevent():
     audit_entry(message, level, extra)
     return jsonify(message='ok')
 
-
-@base_blueprint.route('/save_data', methods=('POST',))
-def save_data():
-    """Write JSON to disk
-
-    API for client applications to write JSON directly to disk.
-    Intended use: front-end can capture data at any point and write
-    to disk for testing & verification.
-
-    Returns a json friendly message, i.e. {"message": "ok"} or details on error
-    ---
-    operationId: save_data
-    tags:
-      - debugging
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        schema:
-          id: save_data
-          required:
-            - context
-            - data
-          properties:
-            filename:
-              type: string
-              description: string to save file as.  UUID used by default.
-                does not allow overwrites.
-            context:
-              type: string
-              description: context such as "CQL MME calc"
-            data:
-              type: json
-              description: json serialized data to capture
-    responses:
-      200:
-        description: successful operation
-        schema:
-          id: response_ok
-          required:
-            - message
-          properties:
-            message:
-              type: string
-              description: Result, typically "ok"
-
-    """
-    if current_app.config["ENV"] != "development":
-        return jsonify(message="Disabled on non-dev deploys"), 401
-    body = request.get_json()
-    if not body:
-        return jsonify(message="Missing JSON data"), 400
-
-    data = body.get('data', None)
-    context = body.get('context', None)
-    for item in ('data', 'context'):
-        if not locals()[item]:
-            return jsonify(
-                message=f"missing required '{item}' in post"), 400
-
-    filename = body.get('filename', str(uuid.uuid4()))
-    location = current_app.config['DEBUG_OUTPUT_DIR']
-    if not (os.path.isdir(location)):
-        return jsonify(
-            message="ill configured, can't find DEBUG_OUTPUT_DIR"), 400
-    full_path = os.path.join(location, filename)
-    if os.path.dirname(full_path) != location:
-        return jsonify(
-            message="no path info allowed in `filename` parameter"), 400
-
-    if os.path.exists(full_path):
-        pass  # overwrite by design on subsequent request
-
-    with open(full_path, 'w') as fp:
-        json.dump(body, fp, indent=4)
-
-    return jsonify(message='ok', saved_file=full_path)
