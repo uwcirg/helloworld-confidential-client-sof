@@ -6,7 +6,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from isacc_messaging import api
 from isacc_messaging.audit import audit_entry, audit_log_init
-from isacc_messaging.extensions import oauth, sess
+from isacc_messaging.extensions import oauth
 
 
 def create_app(testing=False, cli=False):
@@ -52,7 +52,6 @@ def configure_extensions(app, cli):
     """configure flask extensions
     """
     oauth.init_app(app)
-    sess.init_app(app)
 
 
 def register_blueprints(app):
