@@ -1,11 +1,9 @@
 from authlib.integrations.flask_client import OAuth
 from flask import current_app
-from flask_session import Session
 import redis
 from requests_cache import CachedSession
 
 oauth = OAuth()
-sess = Session()
 
 
 class CS_Singleton(object):
