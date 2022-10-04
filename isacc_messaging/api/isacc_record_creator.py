@@ -11,6 +11,12 @@ from twilio.base.exceptions import TwilioRestException
 from isacc_messaging.api.fhir import HAPI_request
 
 
+def first_in_bundle(bundle):
+    if bundle['resourceType'] == 'Bundle' and bundle['total'] > 0:
+        return bundle['entry'][0]['resource']
+    return None
+
+
 class IsaccRecordCreator:
     def __init__(self):
         pass
@@ -88,8 +94,9 @@ class IsaccRecordCreator:
         result = HAPI_request('GET', 'CarePlan', params={"subject": f"Patient/{patient_id}",
                                                          "category": "isacc-message-plan",
                                                          "_sort": "-_lastUpdated"})
-        if result is not None and result['total'] > 0:
-            return CarePlan(result['entry'][0]['resource'])
+        result = first_in_bundle(result)
+        if result is not None:
+            return CarePlan(result)
         else:
             print("no careplans found")
             return None
@@ -151,10 +158,9 @@ class IsaccRecordCreator:
             cr = HAPI_request('GET', 'CommunicationRequest', params={
                 "identifier": f"http://isacc.app/twilio-message-sid|{message_sid}"
             })
-            if cr['resourceType'] == 'Bundle':
-                if cr['total'] == 0:
-                    return None
-                cr = cr['entry'][0]['resource']
+            cr = first_in_bundle(cr)
+            if cr is None:
+                return None
 
             cr = CommunicationRequest(cr)
             c = self.__create_communication_from_request(cr)
@@ -180,8 +186,7 @@ class IsaccRecordCreator:
         pt = HAPI_request('GET', 'Patient', params={
             'telecom': values.get('From').replace("+1", "")
         })
-        if pt['resourceType'] == 'Bundle' and pt['total'] > 0:
-            pt = Patient(pt['entry'][0]['resource'])
+        pt = Patient(first_in_bundle(pt))
 
         self.generate_incoming_message(
             message=values.get("Body"),
@@ -190,4 +195,3 @@ class IsaccRecordCreator:
             patient_id=pt.id
         )
         pass
-
