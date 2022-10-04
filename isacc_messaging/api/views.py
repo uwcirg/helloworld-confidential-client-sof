@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 import logging
 
+from isacc_messaging.api.isacc_record_creator import IsaccRecordCreator
 from isacc_messaging.audit import audit_entry
 
 base_blueprint = Blueprint('base', __name__)
@@ -78,3 +79,33 @@ def auditlog_addevent():
     audit_entry(message, level, extra)
     return jsonify(message='ok')
 
+
+@base_blueprint.route('/convert', methods=('POST',))
+def convert():
+    cr_id = request.form['cr']
+    result = convert_communicationrequest_to_communication(cr_id)
+    return result
+
+
+def convert_communicationrequest_to_communication(cr_id):
+    recordCreator = IsaccRecordCreator()
+    result = recordCreator.convertCommunicationToRequest(cr_id)
+    return result
+
+
+@base_blueprint.route("/MessageStatus", methods=['POST'])
+def message_status_update():
+    recordCreator = IsaccRecordCreator()
+    result = recordCreator.onTwilioMessageStatusUpdate(request.values)
+    if result is not None:
+        return ('', 204)
+    return ('', 500)
+
+
+@base_blueprint.route("/sms", methods=['GET','POST'])
+def incoming_sms():
+    recordCreator = IsaccRecordCreator()
+    result = recordCreator.onTwilioMessageReceived(request.values)
+    if result is not None:
+        return ('', 204)
+    return ('', 500)

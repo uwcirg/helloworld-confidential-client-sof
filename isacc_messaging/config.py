@@ -23,3 +23,8 @@ LOGSERVER_URL = os.getenv('LOGSERVER_URL')
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG').upper()
 
 VERSION_STRING = os.getenv("VERSION_STRING")
+
+# isacc app variables
+WEBHOOK_CALLBACK = os.getenv("WEBHOOK_CALLBACK")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
