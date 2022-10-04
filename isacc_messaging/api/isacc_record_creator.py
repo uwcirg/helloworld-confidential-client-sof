@@ -194,4 +194,3 @@ class IsaccRecordCreator:
             twilio_sid=values.get('SmsSid'),
             patient_id=pt.id
         )
-        pass
