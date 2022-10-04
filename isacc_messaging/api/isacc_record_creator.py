@@ -15,7 +15,7 @@ class IsaccRecordCreator:
     def __init__(self):
         pass
 
-    def __createCommunicationFromRequest(self, cr):
+    def __create_communication_from_request(self, cr):
         return {
             "resourceType": "Communication",
             "basedOn": [{"reference": f"CommunicationRequest/{cr.id}"}],
@@ -39,12 +39,12 @@ class IsaccRecordCreator:
             "status": "completed"
         }
 
-    def convertCommunicationToRequest(self, cr_id):
+    def convert_communication_to_request(self, cr_id):
         # cr = CommunicationRequest.read(cr_id, self.db.server)
         cr = HAPI_request('GET', 'CommunicationRequest', cr_id)
         cr = CommunicationRequest(cr)
 
-        target_phone = self.getCaringContactsPhoneNumber(cr.recipient[0].reference.split('/')[1])
+        target_phone = self.get_caring_contacts_phone_number(cr.recipient[0].reference.split('/')[1])
         try:
             result = self.send_twilio_sms(message=cr.payload[0].contentString, to_phone=target_phone)
         except TwilioRestException as exception:
@@ -81,11 +81,11 @@ class IsaccRecordCreator:
         print("Message created:", message)
         return message
 
-    def getCareplan(self, patientId):
+    def get_careplan(self, patient_id):
         # result = CarePlan.where(struct={"subject": f"Patient/{patientId}",
         #                                 "category": "isacc-message-plan",
         #                                 "_sort": "-_lastUpdated"}).perform_resources(self.db.server)
-        result = HAPI_request('GET', 'CarePlan', params={"subject": f"Patient/{patientId}",
+        result = HAPI_request('GET', 'CarePlan', params={"subject": f"Patient/{patient_id}",
                                                          "category": "isacc-message-plan",
                                                          "_sort": "-_lastUpdated"})
         if result is not None and result['total'] > 0:
@@ -94,8 +94,8 @@ class IsaccRecordCreator:
             print("no careplans found")
             return None
 
-    def getCaringContactsPhoneNumber(self, patientId):
-        pt = HAPI_request('GET', 'Patient', patientId)
+    def get_caring_contacts_phone_number(self, patient_id):
+        pt = HAPI_request('GET', 'Patient', patient_id)
         pt = Patient(pt)
         for t in pt.telecom:
             if t.system == 'sms':
@@ -103,18 +103,17 @@ class IsaccRecordCreator:
         print("Error: Patient doesn't have an sms contact point on file")
         return None
 
-    def generateIncomingMessage(self, message, time: datetime = None, patientId=None, priority=None, themes=None, twilioSid=None):
+    def generate_incoming_message(self, message, time: datetime = None, patient_id=None, priority=None, themes=None, twilio_sid=None):
         if priority is not None and priority != "routine" and priority != "urgent" and priority != "stat":
-            print(f"Invalid priority given: {priority}. Only routine, urgent, and stat are allowed.")
-            return
+            raise ValueError(f"Invalid priority given: {priority}. Only routine, urgent, and stat are allowed.")
 
         if priority is None:
             priority = "routine"
 
-        if patientId is None:
-            patientId = "2cda5aad-e409-4070-9a15-e1c35c46ed5a"  # Geoffrey Abbott
+        if patient_id is None:
+            raise ValueError("Need patient ID")
 
-        carePlan = self.getCareplan(patientId)
+        care_plan = self.get_careplan(patient_id)
 
         if time is None:
             time = datetime.now()
@@ -124,15 +123,15 @@ class IsaccRecordCreator:
 
         m = {
             'resourceType': 'Communication',
-            'identifier': [{"system": "http://isacc.app/twilio-message-sid", "value": twilioSid}],
-            'partOf': [{'reference': f'CarePlan/{carePlan.id}'}],
+            'identifier': [{"system": "http://isacc.app/twilio-message-sid", "value": twilio_sid}],
+            'partOf': [{'reference': f'CarePlan/{care_plan.id}'}],
             'status': 'completed',
             'category': [{'coding': [{'system': 'https://isacc.app/CodeSystem/communication-type',
                                       'code': 'isacc-received-message'}]}],
             'medium': [{'coding': [{'system': 'http://terminology.hl7.org/ValueSet/v3-ParticipationMode',
                                     'code': 'SMSWRIT'}]}],
             'sent': time.astimezone().isoformat(),
-            'sender': {'reference': f'Patient/{patientId}'},
+            'sender': {'reference': f'Patient/{patient_id}'},
             'payload': [{'contentString': message}],
             'priority': priority,
             'extension': [
@@ -144,8 +143,7 @@ class IsaccRecordCreator:
         # result = c.create(self.db.server)
         print(result)
 
-
-    def onTwilioMessageStatusUpdate(self, values):
+    def on_twilio_message_status_update(self, values):
         message_sid = values.get('MessageSid', None)
         message_status = values.get('MessageStatus', None)
 
@@ -159,7 +157,7 @@ class IsaccRecordCreator:
                 cr = cr['entry'][0]['resource']
 
             cr = CommunicationRequest(cr)
-            c = self.__createCommunicationFromRequest(cr)
+            c = self.__create_communication_from_request(cr)
             c = Communication(c)
 
             print("Creating resource: ")
@@ -178,18 +176,18 @@ class IsaccRecordCreator:
 
             return result
 
-    def onTwilioMessageReceived(self, values):
+    def on_twilio_message_received(self, values):
         pt = HAPI_request('GET', 'Patient', params={
             'telecom': values.get('From').replace("+1", "")
         })
         if pt['resourceType'] == 'Bundle' and pt['total'] > 0:
             pt = Patient(pt['entry'][0]['resource'])
 
-        self.generateIncomingMessage(
+        self.generate_incoming_message(
             message=values.get("Body"),
             time=datetime.now(),
-            twilioSid=values.get('SmsSid'),
-            patientId=pt.id
+            twilio_sid=values.get('SmsSid'),
+            patient_id=pt.id
         )
         pass
 
