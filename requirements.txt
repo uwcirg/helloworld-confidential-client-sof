@@ -32,3 +32,5 @@ url-normalize==1.4.3      # via requests-cache
 urllib3==1.26.7           # via requests, requests-cache
 werkzeug==2.0.1           # via flask
 zipp==3.5.0               # via importlib-metadata
+twilio==7.14.1
+fhirclient==4.1.0
