@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify, request, current_app
 import logging
+
+from flask import Blueprint, jsonify, request
 
 from isacc_messaging.api.isacc_record_creator import IsaccRecordCreator
 from isacc_messaging.audit import audit_entry
@@ -88,15 +89,15 @@ def convert():
 
 
 def convert_communicationrequest_to_communication(cr_id):
-    recordCreator = IsaccRecordCreator()
-    result = recordCreator.convert_communication_to_request(cr_id)
+    record_creator = IsaccRecordCreator()
+    result = record_creator.convert_communicationrequest_to_communication(cr_id=cr_id)
     return result
 
 
 @base_blueprint.route("/MessageStatus", methods=['POST'])
 def message_status_update():
-    recordCreator = IsaccRecordCreator()
-    result = recordCreator.on_twilio_message_status_update(request.values)
+    record_creator = IsaccRecordCreator()
+    result = record_creator.on_twilio_message_status_update(request.values)
     if result is not None:
         return ('', 204)
     return ('', 500)
@@ -104,8 +105,18 @@ def message_status_update():
 
 @base_blueprint.route("/sms", methods=['GET','POST'])
 def incoming_sms():
-    recordCreator = IsaccRecordCreator()
-    result = recordCreator.on_twilio_message_received(request.values)
+    record_creator = IsaccRecordCreator()
+    result = record_creator.on_twilio_message_received(request.values)
     if result is not None:
         return ('', 204)
     return ('', 500)
+
+
+@base_blueprint.route("/execute_requests", methods=['POST'])
+def execute_requests():
+    record_creator = IsaccRecordCreator()
+    result = record_creator.execute_requests()
+    if result is not None:
+        return ('', 204)
+    return ('', 500)
+
