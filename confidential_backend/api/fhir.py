@@ -10,6 +10,7 @@ blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
 
 PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
+SUPPORTED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
 
 def collate_results(*result_sets):
     """Compile given result sets into a single bundle"""
@@ -50,8 +51,8 @@ def patient_by_id(id):
     return patient_fhir
 
 
-@blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None})
-@blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>')
+@blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None}, methods=SUPPORTED_METHODS)
+@blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>', methods=SUPPORTED_METHODS)
 def route_fhir(relative_path, session_id):
     g.session_id = session_id
     current_app.logger.debug('received session_id as path parameter: %s', session_id)
