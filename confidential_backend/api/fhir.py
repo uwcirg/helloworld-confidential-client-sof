@@ -9,7 +9,9 @@ from confidential_backend.wrapped_session import get_session_value
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
 
-PROXY_HEADERS = ('Authorization', 'Cache-Control')
+PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
+# including OPTIONS conflicts with flask-cors
+SUPPORTED_METHODS = ('GET', 'POST', 'PUT', 'DELETE')
 
 def collate_results(*result_sets):
     """Compile given result sets into a single bundle"""
@@ -50,8 +52,8 @@ def patient_by_id(id):
     return patient_fhir
 
 
-@blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None})
-@blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>')
+@blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None}, methods=SUPPORTED_METHODS)
+@blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>', methods=SUPPORTED_METHODS)
 def route_fhir(relative_path, session_id):
     g.session_id = session_id
     current_app.logger.debug('received session_id as path parameter: %s', session_id)
@@ -74,10 +76,12 @@ def route_fhir(relative_path, session_id):
         if header_name in request.headers:
             upstream_headers[header_name] = request.headers[header_name]
 
-    upstream_response = requests.get(
+    upstream_response = requests.request(
         url=upstream_fhir_url,
+        method=request.method,
         headers=upstream_headers,
         params=request.args,
+        json=request.json,
     )
     upstream_response.raise_for_status()
     return upstream_response.json()
@@ -85,7 +89,7 @@ def route_fhir(relative_path, session_id):
 
 @blueprint.after_request
 def add_header(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Cache-Control'
+    response.headers.setdefault('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
+    response.headers.setdefault('Access-Control-Allow-Headers', ", ".join(PROXY_HEADERS))
 
     return response
