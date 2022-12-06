@@ -76,8 +76,9 @@ def route_fhir(relative_path, session_id):
         if header_name in request.headers:
             upstream_headers[header_name] = request.headers[header_name]
 
-    upstream_response = requests.get(
+    upstream_response = requests.request(
         url=upstream_fhir_url,
+        method=request.method,
         headers=upstream_headers,
         params=request.args,
     )
