@@ -86,6 +86,6 @@ def route_fhir(relative_path, session_id):
 @blueprint.after_request
 def add_header(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Cache-Control'
+    response.headers.setdefault('Access-Control-Allow-Headers', ", ".join(PROXY_HEADERS))
 
     return response
