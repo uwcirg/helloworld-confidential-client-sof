@@ -81,6 +81,7 @@ def route_fhir(relative_path, session_id):
         method=request.method,
         headers=upstream_headers,
         params=request.args,
+        json=request.json,
     )
     upstream_response.raise_for_status()
     return upstream_response.json()
