@@ -10,7 +10,8 @@ blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
 
 PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
-SUPPORTED_METHODS = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
+# including OPTIONS conflicts with flask-cors
+SUPPORTED_METHODS = ('GET', 'POST', 'PUT', 'DELETE')
 
 def collate_results(*result_sets):
     """Compile given result sets into a single bundle"""
