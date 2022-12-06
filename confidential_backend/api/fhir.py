@@ -9,7 +9,7 @@ from confidential_backend.wrapped_session import get_session_value
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
 
-PROXY_HEADERS = ('Authorization', 'Cache-Control')
+PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
 
 def collate_results(*result_sets):
     """Compile given result sets into a single bundle"""
