@@ -87,11 +87,3 @@ def route_fhir(relative_path, session_id):
     )
     upstream_response.raise_for_status()
     return upstream_response.json()
-
-
-@blueprint.after_request
-def add_header(response):
-    response.headers.setdefault('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-    response.headers.setdefault('Access-Control-Allow-Headers', ", ".join(PROXY_HEADERS))
-
-    return response
