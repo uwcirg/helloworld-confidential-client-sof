@@ -1,6 +1,7 @@
 import requests
 
 from flask import Blueprint, current_app, g, request
+from flask_cors import cross_origin
 
 from confidential_backend.audit import audit_entry
 from confidential_backend.jsonify_abort import jsonify_abort
@@ -54,6 +55,7 @@ def patient_by_id(id):
 
 @blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None}, methods=SUPPORTED_METHODS)
 @blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>', methods=SUPPORTED_METHODS)
+@cross_origin(allowed_headers=PROXY_HEADERS)
 def route_fhir(relative_path, session_id):
     g.session_id = session_id
     current_app.logger.debug('received session_id as path parameter: %s', session_id)
@@ -85,11 +87,3 @@ def route_fhir(relative_path, session_id):
     )
     upstream_response.raise_for_status()
     return upstream_response.json()
-
-
-@blueprint.after_request
-def add_header(response):
-    response.headers.setdefault('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-    response.headers.setdefault('Access-Control-Allow-Headers', ", ".join(PROXY_HEADERS))
-
-    return response
