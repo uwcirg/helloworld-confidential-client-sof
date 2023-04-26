@@ -3,6 +3,7 @@ import requests
 from flask import Blueprint, current_app, g, request
 from flask_cors import cross_origin
 
+from confidential_backend import PROXY_HEADERS
 from confidential_backend.audit import audit_entry
 from confidential_backend.jsonify_abort import jsonify_abort
 from confidential_backend.wrapped_session import get_session_value
@@ -10,7 +11,6 @@ from confidential_backend.wrapped_session import get_session_value
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
 
-PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
 # including OPTIONS conflicts with flask-cors
 SUPPORTED_METHODS = ('GET', 'POST', 'PUT', 'DELETE')
 
