@@ -1,6 +1,8 @@
 from flask import Blueprint, current_app, redirect, request, url_for, session
+from flask_cors import cross_origin
 import requests
 
+from confidential_backend import PROXY_HEADERS
 from confidential_backend.audit import audit_entry
 from confidential_backend.auth.helpers import extract_payload, format_as_jwt
 from confidential_backend.extensions import oauth
@@ -177,6 +179,7 @@ def authorize():
 
 
 @blueprint.route('/auth-info')
+@cross_origin(allowed_headers=PROXY_HEADERS)
 def auth_info():
     token_response = session['token_response']
     iss = session['iss']
