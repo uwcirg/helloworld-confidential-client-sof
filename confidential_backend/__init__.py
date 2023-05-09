@@ -1,1 +1,1 @@
-PROXY_HEADERS = ('Authorization', 'Cache-Control', 'Content-Type')
+PROXY_HEADERS = ('Accept', 'Authorization', 'Cache-Control', 'Content-Type')
