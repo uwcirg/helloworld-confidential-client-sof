@@ -179,7 +179,7 @@ def authorize():
 
 
 @blueprint.route('/auth-info')
-@cross_origin(allowed_headers=PROXY_HEADERS)
+@cross_origin(allow_headers=PROXY_HEADERS)
 def auth_info():
     token_response = session['token_response']
     iss = session['iss']
