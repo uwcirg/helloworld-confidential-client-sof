@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, redirect, request, url_for, session
 from flask_cors import cross_origin
+import json
 import requests
 
 from confidential_backend import PROXY_HEADERS
@@ -41,6 +42,27 @@ def get_extension_value(url, extensions):
     raise ValueError('extension url not present in any extension', url)
 
 
+def bytes_to_json(byte_string):
+    """generate JSON from given byte_string
+
+    given input such as: b'{\\r\\n  "access_token": "..."}'
+    decode, clean and parse and return as JSON, or string
+    if not parseable
+    """
+    try:
+        decoded = byte_string.decode('utf-8')
+    except (AttributeError, UnicodeDecodeError):
+        return byte_string
+
+    try:
+        clean = decoded.replace('\\r\\n', '')
+        json_data = json.loads(clean)
+    except json.JSONDecodeError:
+        return clean
+
+    return json_data
+
+
 def debugging_compliance_fix(session):
     def _fix(response):
         current_app.logger.debug('access_token request url: %s', response.request.url)
@@ -53,7 +75,8 @@ def debugging_compliance_fix(session):
 
         audit_entry(
             "access_token content",
-            extra={'tags':['JWT', "authorize", "token"], 'content': response.content})
+            extra={'tags':['JWT', "authorize", "token"],
+                   'content': bytes_to_json(response.content)})
         response.raise_for_status()
 
         return response
@@ -74,6 +97,7 @@ def launch():
     if launch:
         # launch value received from EHR
         current_app.logger.debug('launch: %s', launch)
+        extra={'tags':['launch']}
 
         # Extract user and subject from encoded launch parameter if found
         # NB this is documented to be ``an opaque handle to the EHR context
@@ -84,11 +108,13 @@ def launch():
         launch_token_patient = payload.get(LAUNCH_VALUE_TO_CODE['patient'])
         if launch_token_patient:
             session['subject'] = f"Patient/{launch_token_patient}"
+            extra['subject'] = session['subject']
 
         launch_token_provider = payload.get(LAUNCH_VALUE_TO_CODE['provider'])
         if launch_token_provider:
             session['user'] = f"Provider/{launch_token_provider}"
-        audit_entry("launch", extra={'tags':['launch']})
+            extra['user'] = session['user']
+        audit_entry("launch", extra=extra)
         session['launch_token_patient'] = launch_token_patient
 
     # fetch conformance statement from /metadata
