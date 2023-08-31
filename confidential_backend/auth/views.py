@@ -51,6 +51,9 @@ def debugging_compliance_fix(session):
         current_app.logger.debug('access_token response.status_code: %s', response.status_code)
         current_app.logger.debug('access_token response.content: %s', response.content)
 
+        audit_entry(
+            "access_token content",
+            extra={'tags':['JWT', "authorize", "token"], 'content': response.content})
         response.raise_for_status()
 
         return response
@@ -156,9 +159,6 @@ def authorize():
     # https://github.com/lepture/authlib/blob/master/authlib/oauth2/client.py#L154
     token_response = oauth.sof.authorize_access_token(_format='json')
     extracted_id_token = extract_payload(token_response.get('id_token'))
-    audit_entry(
-        "JWT payload",
-        extra={'tags':['JWT', "authorize"], 'payload': extracted_id_token})
     username = extracted_id_token.get('preferred_username')
 
     # standalone uses profile
