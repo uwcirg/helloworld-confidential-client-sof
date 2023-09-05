@@ -28,6 +28,21 @@ LAUNCH_VALUE_TO_CODE = {
 }
 
 
+# A number of undesired attributes from the auth token - removed before logging
+AUTH_TOKEN_LOG_FILTER = (
+    "access_token",
+    "refresh_token",
+    "token_type",
+    "expires_in",
+    "refresh_expires_in",
+    "scope",
+    "id_token",
+    "need_patient_banner",
+    "not-before-policy",
+    "smart_style_url",
+)
+
+
 blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 
 
@@ -60,7 +75,10 @@ def bytes_to_json(byte_string):
     except json.JSONDecodeError:
         return clean
 
-    return json_data
+    # Avoid noise in logs, remove a number of relatively useless attributes
+    filter = current_app.config.get('AUTH_TOKEN_LOG_FILTER') or AUTH_TOKEN_LOG_FILTER
+    keepers = {k:v for k,v in json_data.items() if k not in filter}
+    return keepers
 
 
 def debugging_compliance_fix(session):
