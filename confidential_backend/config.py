@@ -6,7 +6,6 @@ import os
 import redis
 
 AUTH_TOKEN_LOG_FILTER = os.getenv("AUTH_TOKEN_LOG_FILTER").split(",") if "AUTH_TOKEN_LOG_FILTER" in os.environ else None
-s
 DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
 SERVER_NAME = os.getenv("SERVER_NAME")
 SECRET_KEY = os.getenv("SECRET_KEY")
