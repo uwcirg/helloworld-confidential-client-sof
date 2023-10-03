@@ -78,6 +78,9 @@ def route_fhir(relative_path, session_id):
         if header_name in request.headers:
             upstream_headers[header_name] = request.headers[header_name]
 
+    current_app.logger.debug(f'request headers (incoming to /fhir-router): {request.headers}')
+    current_app.logger.debug(f'upstream headers (outgoing to {upstream_fhir_url}): {upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
+
     upstream_response = requests.request(
         url=upstream_fhir_url,
         method=request.method,
