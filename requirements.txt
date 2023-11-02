@@ -13,7 +13,7 @@ click==8.0.1              # via flask
 cryptography==3.3.2         # via authlib, python-jose
 ecdsa==0.14.1             # via python-jose
 flask-cors==3.0.10        # via confidential_backend (setup.py)
-flask-session==0.3.2      # via confidential_backend (setup.py)
+flask-session==0.4.1      # via confidential_backend (setup.py)
 flask==1.1.2              # via flask-session, confidential_backend (setup.py)
 gunicorn==20.1.0          # via confidential_backend (setup.py)
 idna==3.2                 # via requests
