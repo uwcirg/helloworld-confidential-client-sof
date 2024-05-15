@@ -85,12 +85,28 @@ def route_fhir(relative_path, session_id):
             f'upstream headers (outgoing to {upstream_fhir_url}): '
             f'{upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
 
-    upstream_response = requests.request(
-        url=upstream_fhir_url,
-        method=request.method,
-        headers=upstream_headers,
-        params=request.args,
-        json=request.json,
-    )
-    upstream_response.raise_for_status()
-    return upstream_response.json()
+    upstream_request_args = {
+        'url':upstream_fhir_url,
+        'method':request.method,
+        'headers':upstream_headers,
+        'params':request.args,
+        'json':request.json,
+    }
+    upstream_response = requests.request(**upstream_request_args)
+    include_downstream_requests = current_app.config.get('EXTERNAL_FHIR_API')
+    try:
+        upstream_response.raise_for_status()
+        resulting_json = upstream_response.json()
+    except requests.exceptions.HTTPError as e:
+        if upstream_response.status_code = 404 and include_downstream_requests:
+            # on a 404, give downstream a chance at the request
+            resulting_json = None
+        else:
+            raise e
+
+    if current_app.config.get('EXTERNAL_FHIR_API'):
+        resulting_json = downstream_request(
+            upstream_response=resulting_json,
+            relative_path=relative_path,
+            **upstream_request_args)
+    return resulting_json
