@@ -48,8 +48,8 @@ def patient_by_id(id):
         headers=upstream_headers,
     )
     response.raise_for_status()
-    fhir_logger = getLogger
-    fhir_logger.info(response.json())
+    fhir_logger = getLogger()
+    fhir_logger.info({'response': upstream_response.json()})
     patient_fhir = response.json()
     # TODO when possible w/o session cookie: set_session_value(key, patient_fhir)
 
@@ -96,6 +96,6 @@ def route_fhir(relative_path, session_id):
         json=request.json,
     )
     upstream_response.raise_for_status()
-    fhir_logger = getLogger
-    fhir_logger.info(upstream_response.json())
+    fhir_logger = getLogger()
+    fhir_logger.info({"response": upstream_response.json()})
     return upstream_response.json()
