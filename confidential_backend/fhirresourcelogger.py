@@ -20,7 +20,7 @@ def configure_resource_logger(logger):
     return logger
 
 
-def get_fhir_resource_logger():
+def getLogger():
     logger = logging.getLogger("FHIR_RESOURCES")
 
     # Avoid duplicates from multiple calls
