@@ -8,6 +8,7 @@ import redis
 AUTH_TOKEN_LOG_FILTER = os.getenv("AUTH_TOKEN_LOG_FILTER").split(",") if "AUTH_TOKEN_LOG_FILTER" in os.environ else None
 DEBUG_FHIR_REQUESTS = os.getenv("DEBUG_FHIR_REQUESTS", "false").lower() == "true"
 DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
+FHIR_RESOURCES_LOGFILE = os.getenv("FHIR_RESOURCES_LOGFILE")
 SERVER_NAME = os.getenv("SERVER_NAME")
 SECRET_KEY = os.getenv("SECRET_KEY")
 # URL scheme to use outside of request context
