@@ -6,6 +6,7 @@ ARG VERSION_STRING
 ENV VERSION_STRING=$VERSION_STRING
 
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --requirement requirements.txt
 
 COPY . .
