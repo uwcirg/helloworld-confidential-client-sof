@@ -6,6 +6,7 @@
 #
 authlib==0.14.3           # via confidential_backend (setup.py)
 cachelib==0.1.1           # via flask-session
+celery==5.5.3
 certifi==2021.5.30        # via requests
 cffi==1.14.1              # via cryptography
 charset-normalizer==2.0.6  # via requests
