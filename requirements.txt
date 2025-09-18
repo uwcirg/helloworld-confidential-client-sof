@@ -6,6 +6,8 @@
 #
 authlib==0.14.3
     # via confidential_backend (setup.cfg)
+blinker==1.9.0
+    # via flask
 cachelib==0.1.1
     # via
     #   confidential_backend (setup.cfg)
@@ -16,17 +18,15 @@ cffi==2.0.0
     # via cryptography
 charset-normalizer==2.0.12
     # via requests
-click==8.0.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   flask
+click==8.1.8
+    # via flask
 cryptography==46.0.1
     # via
     #   authlib
     #   python-jose
 ecdsa==0.14.1
     # via python-jose
-flask==2.2.5
+flask==2.3.3
     # via
     #   confidential_backend (setup.cfg)
     #   flask-cors
@@ -83,10 +83,8 @@ url-normalize==2.2.1
     # via requests-cache
 urllib3==1.26.20
     # via requests
-werkzeug==2.2.2
-    # via
-    #   confidential_backend (setup.cfg)
-    #   flask
+werkzeug==3.1.3
+    # via flask
 zipp==3.23.0
     # via importlib-metadata
 
