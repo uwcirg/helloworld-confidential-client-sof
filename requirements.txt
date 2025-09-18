@@ -89,8 +89,6 @@ werkzeug==2.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask
-zipp==3.5.0
-    # via confidential_backend (setup.cfg)
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
