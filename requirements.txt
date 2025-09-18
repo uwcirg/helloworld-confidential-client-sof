@@ -20,15 +20,12 @@ click==8.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask
-cryptography==3.3.2
+cryptography==45.0.7
     # via
     #   authlib
-    #   confidential_backend (setup.cfg)
     #   python-jose
 ecdsa==0.14.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   python-jose
+    # via python-jose
 flask==1.1.2
     # via
     #   confidential_backend (setup.cfg)
@@ -87,7 +84,6 @@ rsa==4.7
 six==1.16.0
     # via
     #   confidential_backend (setup.cfg)
-    #   cryptography
     #   ecdsa
     #   flask-cors
     #   python-jose
