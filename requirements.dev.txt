@@ -24,7 +24,7 @@ click==8.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask
-cryptography==45.0.7
+cryptography==46.0.1
     # via
     #   authlib
     #   python-jose
@@ -133,11 +133,9 @@ six==1.17.0
     #   python-jose
     #   requests-mock
 toml==0.10.2
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
-typing-extensions==3.10.0.2
-    # via confidential_backend (setup.cfg)
+    # via pytest
+typing-extensions==4.15.0
+    # via cryptography
 url-normalize==2.2.1
     # via requests-cache
 urllib3==1.26.20
@@ -146,10 +144,8 @@ werkzeug==2.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask
-zipp==3.5.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   importlib-metadata
+zipp==3.23.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
