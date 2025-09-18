@@ -52,15 +52,12 @@ markupsafe==2.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   jinja2
-pyasn1==0.4.8
+pyasn1==0.6.1
     # via
-    #   confidential_backend (setup.cfg)
     #   python-jose
     #   rsa
-pycparser==2.20
-    # via
-    #   cffi
-    #   confidential_backend (setup.cfg)
+pycparser==2.23
+    # via cffi
 python-jose[cryptography]==3.2.0
     # via confidential_backend (setup.cfg)
 python-json-logger==0.1.11
