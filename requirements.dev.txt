@@ -4,10 +4,8 @@
 #
 #    pip-compile --extra=dev --output-file=requirements.dev.txt setup.cfg
 #
-attrs==21.2.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
+attrs==25.3.0
+    # via pytest
 authlib==0.14.3
     # via confidential_backend (setup.cfg)
 cachelib==0.1.1
@@ -45,12 +43,8 @@ idna==3.10
     # via
     #   requests
     #   url-normalize
-importlib-metadata==4.8.1
-    # via confidential_backend (setup.cfg)
-iniconfig==1.1.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
+iniconfig==2.1.0
+    # via pytest
 itsdangerous==2.0.1
     # via
     #   confidential_backend (setup.cfg)
@@ -64,40 +58,24 @@ markupsafe==2.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   jinja2
-mirakuru==2.4.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest-redis
-packaging==21.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
-pluggy==1.0.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
-port-for==0.6.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest-redis
-psutil==5.8.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   mirakuru
-py==1.10.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   pytest
+mirakuru==2.6.1
+    # via pytest-redis
+packaging==25.0
+    # via pytest
+pluggy==1.6.0
+    # via pytest
+port-for==0.7.4
+    # via pytest-redis
+psutil==7.1.0
+    # via mirakuru
+py==1.11.0
+    # via pytest
 pyasn1==0.6.1
     # via
     #   python-jose
     #   rsa
 pycparser==2.23
     # via cffi
-pyparsing==2.4.7
-    # via
-    #   confidential_backend (setup.cfg)
-    #   packaging
 pytest==6.2.5
     # via
     #   confidential_backend (setup.cfg)
@@ -144,8 +122,6 @@ werkzeug==2.0.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask
-zipp==3.23.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
