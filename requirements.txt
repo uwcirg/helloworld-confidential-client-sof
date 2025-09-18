@@ -37,12 +37,8 @@ flask-session==0.4.1
     # via confidential_backend (setup.cfg)
 gunicorn==20.1.0
     # via confidential_backend (setup.cfg)
-idna==3.2
-    # via
-    #   confidential_backend (setup.cfg)
-    #   requests
-importlib-metadata==4.8.1
-    # via confidential_backend (setup.cfg)
+idna==3.10
+    # via requests
 itsdangerous==2.0.1
     # via
     #   confidential_backend (setup.cfg)
@@ -103,9 +99,7 @@ werkzeug==2.0.1
     #   confidential_backend (setup.cfg)
     #   flask
 zipp==3.5.0
-    # via
-    #   confidential_backend (setup.cfg)
-    #   importlib-metadata
+    # via confidential_backend (setup.cfg)
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

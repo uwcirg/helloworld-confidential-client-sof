@@ -41,10 +41,8 @@ flask-session==0.4.1
     # via confidential_backend (setup.cfg)
 gunicorn==20.1.0
     # via confidential_backend (setup.cfg)
-idna==3.2
-    # via
-    #   confidential_backend (setup.cfg)
-    #   requests
+idna==3.10
+    # via requests
 importlib-metadata==4.8.1
     # via confidential_backend (setup.cfg)
 iniconfig==1.1.1
