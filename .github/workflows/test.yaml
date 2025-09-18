@@ -6,7 +6,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: python:3.7
+    container: python:3.9
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
