@@ -26,7 +26,7 @@ cryptography==46.0.1
     #   python-jose
 ecdsa==0.14.1
     # via python-jose
-flask==1.1.2
+flask==2.0.2
     # via
     #   confidential_backend (setup.cfg)
     #   flask-cors
