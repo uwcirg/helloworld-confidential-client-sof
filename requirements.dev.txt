@@ -49,10 +49,8 @@ itsdangerous==2.2.0
     # via
     #   flask
     #   requests-cache
-jinja2==3.0.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   flask
+jinja2==3.1.6
+    # via flask
 markupsafe==3.0.2
     # via jinja2
 mirakuru==2.6.1
