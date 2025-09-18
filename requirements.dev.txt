@@ -14,18 +14,12 @@ cachelib==0.1.1
     # via
     #   confidential_backend (setup.cfg)
     #   flask-session
-certifi==2021.5.30
-    # via
-    #   confidential_backend (setup.cfg)
-    #   requests
-cffi==1.14.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   cryptography
-charset-normalizer==2.0.6
-    # via
-    #   confidential_backend (setup.cfg)
-    #   requests
+certifi==2025.8.3
+    # via requests
+cffi==2.0.0
+    # via cryptography
+charset-normalizer==2.0.12
+    # via requests
 click==8.0.1
     # via
     #   confidential_backend (setup.cfg)
