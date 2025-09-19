@@ -18,10 +18,8 @@ cffi==2.0.0
     # via cryptography
 charset-normalizer==2.0.12
     # via requests
-click==8.0.1
-    # via
-    #   confidential_backend (setup.cfg)
-    #   flask
+click==8.1.8
+    # via flask
 cryptography==46.0.1
     # via
     #   authlib
