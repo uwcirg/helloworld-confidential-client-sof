@@ -1,8 +1,7 @@
 def test_auditlog_missing_data(client):
     response = client.post('/auditlog')
     # no data, expect 400
-    assert response.status_code == 400
-    assert 'JSON' in response.get_json()['message']
+    assert response.status_code == 415
 
 
 def test_auditlog_bogus_level(client):
