@@ -45,7 +45,6 @@ AUTH_TOKEN_LOG_FILTER = (
 
 blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 
-
 def get_extension_value(url, extensions):
     """Get the value of an extension, given the extension URL and list of extensions"""
     for extension in extensions:
@@ -55,6 +54,66 @@ def get_extension_value(url, extensions):
                     return value
             return extension[url]
     raise ValueError('extension url not present in any extension', url)
+
+
+def discover_sof_client_params(fhir_base_url):
+    default_client_config = {
+        'name': 'sof',
+        'compliance_fix': debugging_compliance_fix,
+        'client_kwargs': {'scope': current_app.config['SOF_CLIENT_SCOPES']},
+    }
+
+    # explicit configuration - endpoints individually configured
+    if (
+        'SOF_ACCESS_TOKEN_URL' in current_app.config.keys() and
+        'SOF_AUTHORIZE_URL' in current_app.config.keys() and
+        'SOF_JWKS_URL' in current_app.config.keys()
+    ):
+        return default_client_config + {
+            'access_token_url': current_app.config['SOF_ACCESS_TOKEN_URL'],
+            'authorize_url': current_app.config['SOF_AUTHORIZE_URL'],
+            'jwks_uri': current_app.config['SOF_JWKS_URL'],
+        }
+
+    if "SOF_METADATA_URL" in current_app.config.keys():
+        return default_client_config + {
+            'server_metadata_url': current_app.config['SOF_METADATA_URL'],
+        }
+
+    # no explicit configuration, try expected discovery URLs
+    # try .well-known URLs first
+    for discovery_uri in ('/.well-known/smart-configuration', '/.well-known/openid-configuration'):
+        well_known_url = f"{fhir_base_url}{discovery_uri}"
+        try:
+            well_known = requests.get(
+                url=well_known_url,
+                headers={'Accept': 'application/json'},
+            )
+            well_known.raise_for_status()
+
+            return {
+                **default_client_config,
+                **{'server_metadata_url': well_known_url}
+            }
+        except requests.exceptions.HTTPError as e:
+            pass
+
+    # fallback to conformance statement
+    metadata = requests.get(
+        url=f"{fhir_base_url}/metadata",
+        headers={'Accept': 'application/json'},
+    )
+    metadata.raise_for_status()
+    metadata_security = metadata.json()['rest'][0].get('security')
+
+    if metadata_security:
+        authorize_url = get_extension_value(url='authorize', extensions=metadata_security['extension'][0]['extension'])
+        token_url = get_extension_value(url='token', extensions=metadata_security['extension'][0]['extension'])
+
+    return default_client_config + {
+        'access_token_url': token_url,
+        'authorize_url': authorize_url,
+    }
 
 
 def bytes_to_json(byte_string):
@@ -135,37 +194,8 @@ def launch():
         audit_entry("launch", extra=extra)
         session['launch_token_patient'] = launch_token_patient
 
-    # fetch conformance statement from /metadata
-    ehr_metadata_url = '%s/metadata' % iss
-    metadata = requests.get(
-        ehr_metadata_url,
-        headers={'Accept': 'application/json'},
-    )
-    metadata.raise_for_status()
-    metadata_security = metadata.json()['rest'][0].get('security')
-
-    # default to config values (in case SoF dynamic configuration fails)
-    authorize_url = current_app.config.get('SOF_AUTHORIZE_URL')
-    token_url = current_app.config.get('SOF_ACCESS_TOKEN_URL')
-
-    # dynamic configuration
-    if metadata_security:
-        authorize_url = get_extension_value(url='authorize', extensions=metadata_security['extension'][0]['extension'])
-        token_url = get_extension_value(url='token', extensions=metadata_security['extension'][0]['extension'])
-
-    # set client id and secret from flask config
-    oauth.register(
-        name='sof',
-        access_token_url=token_url,
-        authorize_url=authorize_url,
-        compliance_fix=debugging_compliance_fix,
-        # todo: try using iss
-        # api_base_url=iss+'/',
-        client_kwargs={'scope': current_app.config['SOF_CLIENT_SCOPES']},
-    )
-    # work around back-end caching of dynamic config values
-    oauth.sof.authorize_url = authorize_url
-    oauth.sof.access_token_url = token_url
+    sof_client_params = discover_sof_client_params(fhir_base_url=iss)
+    oauth.register(**sof_client_params)
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
