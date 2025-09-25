@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt setup.cfg
 #
-authlib==0.14.3
+authlib==1.6.4
     # via confidential_backend (setup.cfg)
 cachelib==0.1.1
     # via
