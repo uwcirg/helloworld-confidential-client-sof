@@ -29,7 +29,7 @@ flask==1.1.2
     #   confidential_backend (setup.cfg)
     #   flask-cors
     #   flask-session
-flask-cors==3.0.10
+flask-cors==4.0.1
     # via confidential_backend (setup.cfg)
 flask-session==0.4.1
     # via confidential_backend (setup.cfg)
@@ -73,7 +73,6 @@ rsa==4.9.1
 six==1.17.0
     # via
     #   ecdsa
-    #   flask-cors
     #   python-jose
 typing-extensions==4.15.0
     # via cryptography
