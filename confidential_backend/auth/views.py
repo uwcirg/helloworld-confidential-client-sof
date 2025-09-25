@@ -261,7 +261,7 @@ def auth_info():
     token_response = session['token_response']
     iss = session['iss']
     launch_token_patient = session['launch_token_patient']
-    session_id = request.cookies.get(current_app.session_cookie_name)
+    session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
     return {
         # debugging
         'token_data': token_response,

@@ -95,7 +95,7 @@ def route_fhir(relative_path, session_id):
         method=request.method,
         headers=upstream_headers,
         params=request.args,
-        json=request.json,
+        json=request.json if request.method in ('POST', 'PUT') else None
     )
     upstream_response.raise_for_status()
     fhir_logger = getLogger()
