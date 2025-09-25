@@ -196,6 +196,9 @@ def launch():
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
+    # work around back-end caching of dynamic config values
+    for key, value in sof_client_params.items():
+        setattr(oauth.sof, key, value)
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
