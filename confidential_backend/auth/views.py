@@ -196,6 +196,12 @@ def launch():
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
+    # work around back-end caching of dynamic config values
+    for key, value in sof_client_params.items():
+        setattr(oauth.sof, key, value)
+    # oauth.sof.authorize_url = authorize_url
+    # oauth.sof.access_token_url = token_url
+
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
@@ -231,7 +237,20 @@ def authorize():
 
     # todo: define fetch_token function that requests JSON (Accept: application/json header)
     # https://github.com/lepture/authlib/blob/master/authlib/oauth2/client.py#L154
-    token_response = oauth.sof.authorize_access_token(_format='json')
+    try:
+        token_response = oauth.sof.authorize_access_token(_format='json')
+    except requests.exceptions.HTTPError as http_err:
+        # Log request details
+        req = http_err.response.request
+        current_app.logger.debug("HTTPError occurred getting access token")
+        current_app.logger.debug(f"Request URL: {req.url}")
+        current_app.logger.debug(f"Request Method: {req.method}")
+        current_app.logger.debug(f"Request Headers: {req.headers}")
+        current_app.logger.debug(f"Request Body: {req.body}")
+        current_app.logger.debug(f"Response Body: {http_err.response.content}")
+
+        raise http_err
+
     extracted_id_token = extract_payload(token_response.get('id_token'))
     username = extracted_id_token.get('preferred_username')
 
