@@ -237,10 +237,6 @@ def authorize():
         # Log request details
         req = http_err.response.request
         current_app.logger.debug("HTTPError occurred getting access token")
-        current_app.logger.debug(f"Request URL: {req.url}")
-        current_app.logger.debug(f"Request Method: {req.method}")
-        current_app.logger.debug(f"Request Headers: {req.headers}")
-        current_app.logger.debug(f"Request Body: {req.body}")
         current_app.logger.debug(f"Response Body: {http_err.response.content}")
 
         raise http_err
