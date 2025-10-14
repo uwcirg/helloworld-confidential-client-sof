@@ -5,6 +5,7 @@ from flask_cors import cross_origin
 
 from confidential_backend import PROXY_HEADERS
 from confidential_backend.audit import audit_entry
+from confidential_backend.cachelaunchresponse import persist_response
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
 from confidential_backend.wrapped_session import get_session_value
@@ -48,6 +49,7 @@ def patient_by_id(id):
         headers=upstream_headers,
     )
     response.raise_for_status()
+    persist_response.delay(response)
     fhir_logger = getLogger()
     fhir_logger.info(
         {"message": "response", "fhir": upstream_response.json()})

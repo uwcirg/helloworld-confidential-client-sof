@@ -8,7 +8,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from confidential_backend import auth, api
 from confidential_backend.audit import audit_entry, audit_log_init
 from confidential_backend.extensions import oauth, sess
+from confidential_backend.celery_utils import make_celery
 
+celery = None
 
 def create_app(testing=False, cli=False):
     """Application factory, used to create application
@@ -23,6 +25,8 @@ def create_app(testing=False, cli=False):
     register_blueprints(app)
     configure_proxy(app)
 
+    global celery
+    celery = make_celery(app)
     return app
 
 
