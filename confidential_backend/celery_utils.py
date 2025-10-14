@@ -1,11 +1,9 @@
 from celery import Celery
 
+celery = Celery(__name__)
+
 
 def make_celery(flask_app):
-    celery = Celery(
-        flask_app.import_name,
-        broker=flask_app.config["CELERY_BROKER_URL"]
-    )
     celery.conf.update(flask_app.config)
 
     class ContextTask(celery.Task):
