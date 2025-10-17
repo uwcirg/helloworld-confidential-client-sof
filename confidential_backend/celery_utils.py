@@ -12,7 +12,7 @@ def create_celery(flask_app=None):
     celery = Celery(
         flask_app.import_name,
         broker=flask_app.config["CELERY_BROKER_URL"],
-        backend=flask_app.config["CELERY_RESULT_BACKEND"],
+        results_backend=flask_app.config["CELERY_BROKER_URL"],
     )
     celery.conf.update(flask_app.config)
 
@@ -27,4 +27,3 @@ def create_celery(flask_app=None):
 
 
 celery = create_celery()
-celery.autodiscover_tasks(['confidential_backend.cachelaunchrespons'])
