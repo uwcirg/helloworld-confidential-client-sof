@@ -13,6 +13,7 @@ def create_celery(flask_app=None):
         flask_app.import_name,
         broker=flask_app.config["CELERY_BROKER_URL"],
         results_backend=flask_app.config["CELERY_BROKER_URL"],
+        imports = ('confidential_backend.cachelaunchresponse',)
     )
     celery.conf.update(flask_app.config)
 
