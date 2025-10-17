@@ -1,9 +1,10 @@
 """Persist all resources received from the launch URL FHIR server"""
 from celery.utils.log import get_task_logger
 
-from confidential_backend.celery_utils import celery
+from confidential_backend.celery_utils import create_celery
 
 logger = get_task_logger(__name__)
+celery = create_celery()
 
 @celery.task
 def persist_response(response):
