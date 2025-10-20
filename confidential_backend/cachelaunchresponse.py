@@ -28,7 +28,7 @@ def persist_resource(resource):
     put_url = f"{base}{resource_type}/{id}"
     logger.debug(f"Persisting {put_url}")
     response = requests.put(put_url, json=resource)
-    response.raise_on_status()
+    response.raise_for_status()
 
 
 def persist_bundle(bundle):
