@@ -9,7 +9,7 @@ celery = create_celery()
 
 @celery.task
 def persist_response(response):
-    if not "resourceType" in resource:
+    if not "resourceType" in response:
         logger.error(f"non-FHIR response; can't persist: {response}")
         return
     logger.info("Response received of type %s", response.get("resourceType"))
@@ -32,7 +32,7 @@ def persist_resource(resource):
 
 def persist_bundle(bundle):
     """Break into single resources for persistence - don't retain bundles"""
-    if resource["resourceType"] != "Bundle":
+    if bundle["resourceType"] != "Bundle":
         persist_resource(bundle)
         return
 
