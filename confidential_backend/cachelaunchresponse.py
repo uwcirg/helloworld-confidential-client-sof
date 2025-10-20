@@ -26,6 +26,7 @@ def persist_resource(resource):
     base = "http://fhir-internal:8080/fhir/"
     id = resource["id"]
     put_url = f"{base}{resource_type}/{id}"
+    logger.debug(f"Persisting {put_url}")
     response = requests.put(put_url, json=resource)
     response.raise_on_status()
 
@@ -36,5 +37,5 @@ def persist_bundle(bundle):
         persist_resource(bundle)
         return
 
-    for e in bundle["entry"]:
+    for e in bundle.get("entry", []):
         persist_resource(e["resource"])
