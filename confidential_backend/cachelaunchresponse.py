@@ -19,8 +19,6 @@ def persist_response(response):
 def persist_resource(resource):
     """Given any single resource, persist to the cache URL"""
     resource_type = resource["resourceType"]
-    if resource_type == "Bundle":
-        raise ValueError("persisting whole bundles not supported")
 
     # Always PUT with given ID, in order to prevent duplicates
     base = "http://fhir-internal:8080/fhir/"
@@ -44,5 +42,9 @@ def persist_bundle(bundle):
         persist_resource(bundle)
         return
 
+    # break apart the bundle, persisting every contained entry
     for e in bundle.get("entry", []):
         persist_resource(e["resource"])
+
+    # persist the bundle itself
+    persist_resource(bundle)
