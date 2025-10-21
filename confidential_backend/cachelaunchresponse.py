@@ -27,8 +27,15 @@ def persist_resource(resource):
     id = resource["id"]
     put_url = f"{base}{resource_type}/{id}"
     logger.debug(f"Persisting {put_url}")
-    response = requests.put(put_url, json=resource)
-    response.raise_for_status()
+    try:
+        response = requests.put(put_url, json=resource)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.warn(
+            f"HTTP error on persist: {response.status_code} {response.reason}")
+        logger.warn(f"{response.text[:500]}")
+    except request.exceptions.RequestException as err:
+        logger.error(f"Request failed: {err}")
 
 
 def persist_bundle(bundle):
