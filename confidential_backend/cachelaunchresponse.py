@@ -13,7 +13,6 @@ def persist_response(response):
     if not "resourceType" in response:
         logger.error(f"non-FHIR response; can't persist: {response}")
         return
-    logger.info("Response received of type %s", response.get("resourceType"))
     persist_bundle(response)
 
 
@@ -25,14 +24,13 @@ def persist_resource(resource):
     base = current_app.config["LAUNCH_CACHE_URL"]
     id = resource["id"]
     put_url = f"{base}/{resource_type}/{id}"
-    logger.debug(f"Persisting {put_url}")
     try:
         response = requests.put(put_url, json=resource)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        logger.warn(
+        logger.error(
             f"HTTP error on persist: {response.status_code} {response.reason}")
-        logger.warn(f"{response.text[:500]}")
+        logger.error(f"{response.text[:500]}")
     except request.exceptions.RequestException as err:
         logger.error(f"Request failed: {err}")
 
@@ -55,8 +53,8 @@ def persist_bundle(bundle):
         response = requests.post(f"{base}/Bundle", json=bundle)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        logger.warn(
+        logger.error(
             f"HTTP error on persist: {response.status_code} {response.reason}")
-        logger.warn(f"{response.text[:500]}")
+        logger.error(f"{response.text[:500]}")
     except request.exceptions.RequestException as err:
         logger.error(f"Request failed: {err}")
