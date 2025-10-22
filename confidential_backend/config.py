@@ -6,7 +6,7 @@ import os
 import redis
 
 AUTH_TOKEN_LOG_FILTER = os.getenv("AUTH_TOKEN_LOG_FILTER").split(",") if "AUTH_TOKEN_LOG_FILTER" in os.environ else None
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/3")
 DEBUG_FHIR_REQUESTS = os.getenv("DEBUG_FHIR_REQUESTS", "false").lower() == "true"
 DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
 FHIR_RESOURCES_LOGFILE = os.getenv("FHIR_RESOURCES_LOGFILE")
