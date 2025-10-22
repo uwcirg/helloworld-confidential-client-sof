@@ -47,4 +47,13 @@ def persist_bundle(bundle):
         persist_resource(e["resource"])
 
     # persist the bundle itself
-    persist_resource(bundle)
+    base = "http://fhir-internal:8080/fhir/"
+    try:
+        response = requests.post(base, json=bundle)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.warn(
+            f"HTTP error on persist: {response.status_code} {response.reason}")
+        logger.warn(f"{response.text[:500]}")
+    except request.exceptions.RequestException as err:
+        logger.error(f"Request failed: {err}")
