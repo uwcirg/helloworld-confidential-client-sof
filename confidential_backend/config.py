@@ -10,6 +10,7 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 DEBUG_FHIR_REQUESTS = os.getenv("DEBUG_FHIR_REQUESTS", "false").lower() == "true"
 DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
 FHIR_RESOURCES_LOGFILE = os.getenv("FHIR_RESOURCES_LOGFILE")
+LAUNCH_CACHE_URL = og.getenv("LAUNCH_CACHE_URL")
 SERVER_NAME = os.getenv("SERVER_NAME")
 SECRET_KEY = os.getenv("SECRET_KEY")
 # URL scheme to use outside of request context

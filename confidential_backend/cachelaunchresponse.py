@@ -1,6 +1,7 @@
 """Persist all resources received from the launch URL FHIR server"""
 import requests
 from celery.utils.log import get_task_logger
+from flask import current_app
 
 from confidential_backend.celery_utils import create_celery
 
@@ -21,9 +22,9 @@ def persist_resource(resource):
     resource_type = resource["resourceType"]
 
     # Always PUT with given ID, in order to prevent duplicates
-    base = "http://fhir-internal:8080/fhir/"
+    base = current_app.config["LAUNCH_CACHE_URL"]
     id = resource["id"]
-    put_url = f"{base}{resource_type}/{id}"
+    put_url = f"{base}/{resource_type}/{id}"
     logger.debug(f"Persisting {put_url}")
     try:
         response = requests.put(put_url, json=resource)
@@ -37,7 +38,8 @@ def persist_resource(resource):
 
 
 def persist_bundle(bundle):
-    """Break into single resources for persistence - don't retain bundles"""
+    """Unpack and persist containted resources, then the bundle itself"""
+
     if bundle["resourceType"] != "Bundle":
         persist_resource(bundle)
         return
@@ -47,10 +49,10 @@ def persist_bundle(bundle):
         persist_resource(e["resource"])
 
     # persist the bundle itself
-    base = "http://fhir-internal:8080/fhir/Bundle"
+    base = current_app.config["LAUNCH_CACHE_URL"]
     bundle['type'] = 'collection'  # can't persist a searchset
     try:
-        response = requests.post(base, json=bundle)
+        response = requests.post(f"{base}/Bundle", json=bundle)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         logger.warn(
