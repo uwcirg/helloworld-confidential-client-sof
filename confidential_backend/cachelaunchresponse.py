@@ -31,7 +31,7 @@ def persist_resource(resource):
         logger.error(
             f"HTTP error on persist: {response.status_code} {response.reason}")
         logger.error(f"{response.text[:500]}")
-    except request.exceptions.RequestException as err:
+    except requests.exceptions.RequestException as err:
         logger.error(f"Request failed: {err}")
 
 
@@ -56,5 +56,5 @@ def persist_bundle(bundle):
         logger.error(
             f"HTTP error on persist: {response.status_code} {response.reason}")
         logger.error(f"{response.text[:500]}")
-    except request.exceptions.RequestException as err:
+    except requests.exceptions.RequestException as err:
         logger.error(f"Request failed: {err}")
