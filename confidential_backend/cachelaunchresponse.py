@@ -48,6 +48,7 @@ def persist_bundle(bundle):
 
     # persist the bundle itself
     base = "http://fhir-internal:8080/fhir/"
+    bundle['type'] = 'collection'  # can't persist a searchset
     try:
         response = requests.post(base, json=bundle)
         response.raise_for_status()
