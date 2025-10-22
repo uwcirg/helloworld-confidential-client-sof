@@ -3,7 +3,7 @@ import requests
 from celery.utils.log import get_task_logger
 from flask import current_app
 
-from confidential_backend.celery_utils import create_celery
+from confidential_backend.celery_factory import create_celery
 
 logger = get_task_logger(__name__)
 celery = create_celery()
