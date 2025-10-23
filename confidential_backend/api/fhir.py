@@ -29,6 +29,7 @@ def collate_results(*result_sets):
 
 @blueprint.route(f'{r4prefix}/Patient/<string:id>')
 def patient_by_id(id):
+    from confidential_backend.cachelaunchresponse import persist_response
     base_url = get_session_value('iss')
     key = f'patient_{id}'
     value = get_session_value(key)
@@ -48,6 +49,7 @@ def patient_by_id(id):
         headers=upstream_headers,
     )
     response.raise_for_status()
+    persist_response.delay(response.json())
     fhir_logger = getLogger()
     fhir_logger.info(
         {"message": "response", "fhir": upstream_response.json()})
@@ -62,6 +64,7 @@ def patient_by_id(id):
 @blueprint.route('/fhir-router/<string:session_id>/', defaults={'relative_path': ''}, methods=SUPPORTED_METHODS)
 @cross_origin(allow_headers=PROXY_HEADERS)
 def route_fhir(relative_path, session_id):
+    from confidential_backend.cachelaunchresponse import persist_response
     g.session_id = session_id
     current_app.logger.debug('received session_id as path parameter: %s', session_id)
 
@@ -98,6 +101,7 @@ def route_fhir(relative_path, session_id):
         json=request.json if request.method in ('POST', 'PUT') else None
     )
     upstream_response.raise_for_status()
+    persist_response.delay(upstream_response.json())
     fhir_logger = getLogger()
     fhir_logger.info(
         {"message": "response", "fhir": upstream_response.json()})
