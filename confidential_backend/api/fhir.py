@@ -27,6 +27,23 @@ def collate_results(*result_sets):
     return results
 
 
+def empty_response(response):
+    """Check for valid / empty response from FHIR server
+
+    :param response: response from FHIR server
+    :returns: True if the response is empty or 404, False otherwise
+    """
+    if response.status_code == 404:
+        return True
+    results = response.json()
+    if results.get('resourceType') == 'Bundle':
+        return results.get('total', -1) == 0
+    # handle servers that don't set total
+    if results.get('resourceType') == 'Bundle' and not results.get('entry'):
+        return True
+    return False
+
+
 @blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None}, methods=SUPPORTED_METHODS)
 @blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>', methods=SUPPORTED_METHODS)
 @blueprint.route('/fhir-router/<string:session_id>/', defaults={'relative_path': ''}, methods=SUPPORTED_METHODS)
@@ -69,7 +86,7 @@ def route_fhir(relative_path, session_id):
         params=request.args,
         json=request.json if request.method in ('POST', 'PUT') else None
     )
-    if upstream_response.status_code == 404 and current_app.config.get('APP_FHIR_URL'):
+    if empty_response(upstream_response) and current_app.config.get('APP_FHIR_URL'):
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = secondary_fhir_server_request(
             request_path=relative_path,

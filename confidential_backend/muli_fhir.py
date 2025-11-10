@@ -99,6 +99,7 @@ def secondary_fhir_server_request(request_path, launch_patient_id, headers, orig
     app_patient_id = get_session_value('app_fhir_patient_id')
     improved_path = adjust_patient_query(full_path, launch_patient_id, app_patient_id)
     secondary_fhir_url = '/'.join((current_app.config.get("APP_FHIR_URL"), improved_path))
+    current_app.logger.debug(f"attempt secondary FHIR request {secondary_fhir_url}")
     secondary_response = requests.request(
         url=secondary_fhir_url,
         method=original_request.method,
