@@ -10,6 +10,7 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/3")
 DEBUG_FHIR_REQUESTS = os.getenv("DEBUG_FHIR_REQUESTS", "false").lower() == "true"
 DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
 FHIR_RESOURCES_LOGFILE = os.getenv("FHIR_RESOURCES_LOGFILE")
+APP_FHIR_URL = os.getenv("APP_FHIR_URL")
 LAUNCH_CACHE_URL = os.getenv("LAUNCH_CACHE_URL")
 SERVER_NAME = os.getenv("SERVER_NAME")
 SECRET_KEY = os.getenv("SECRET_KEY")
