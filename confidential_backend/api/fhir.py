@@ -52,7 +52,7 @@ def patient_by_id(id):
     persist_response.delay(response.json())
     fhir_logger = getLogger()
     fhir_logger.info(
-        {"message": "response", "fhir": upstream_response.json()})
+        {"message": "response", "fhir": response.json()})
     patient_fhir = response.json()
     # TODO when possible w/o session cookie: set_session_value(key, patient_fhir)
 
