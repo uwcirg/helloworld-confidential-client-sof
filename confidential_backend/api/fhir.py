@@ -4,10 +4,10 @@ from flask import Blueprint, current_app, g, request
 from flask_cors import cross_origin
 
 from confidential_backend import PROXY_HEADERS
-from confidential_backend.audit import audit_entry
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
-from confidential_backend.wrapped_session import get_session_value
+from confidential_backend.muli_fhir import lookup_identified_patient, secondary_fhir_server_request
+from confidential_backend.wrapped_session import get_session_value, set_session_value
 
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
@@ -61,6 +61,7 @@ def route_fhir(relative_path, session_id):
             f'upstream headers (outgoing to {upstream_fhir_url}): '
             f'{upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
 
+    fhir_logger = getLogger()
     upstream_response = requests.request(
         url=upstream_fhir_url,
         method=request.method,
@@ -68,9 +69,33 @@ def route_fhir(relative_path, session_id):
         params=request.args,
         json=request.json if request.method in ('POST', 'PUT') else None
     )
+    if upstream_response.status_code == 404 and current_app.config.get('APP_FHIR_URL'):
+        # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
+        secondary_response = secondary_fhir_server_request(
+            request_path=relative_path,
+            launch_patient_id=patient_id,
+            headers=upstream_headers,  # TODO: need these adjust for other FHIR server?
+            original_request=request
+        )
+        secondary_response.raise_for_status()
+        fhir_logger.info({
+            "message": "response",
+            "fhir_server": "APP FHIR",
+            "fhir": secondary_response.json()})
+        return secondary_response.json()
+
     upstream_response.raise_for_status()
+    if relative_path.startswith('Patient'):
+        # Patient lookup after launch - obtain secondary FHIR server Patient.id
+        if not get_session_value('app_fhir_patient_id'):
+            app_fhir_patient = lookup_identified_patient(upstream_response.json())
+            if app_fhir_patient:
+                set_session_value('app_fhir_patient_id', app_fhir_patient.id)
+
     persist_response.delay(upstream_response.json())
-    fhir_logger = getLogger()
-    fhir_logger.info(
-        {"message": "response", "fhir": upstream_response.json()})
+    fhir_logger.info({
+        "message": "response",
+        "fhir_server": "LAUNCH FHIR",
+        "fhir": upstream_response.json()})
+
     return upstream_response.json()
