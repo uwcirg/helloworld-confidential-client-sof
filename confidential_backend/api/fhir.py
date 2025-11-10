@@ -90,7 +90,7 @@ def route_fhir(relative_path, session_id):
         if not get_session_value('app_fhir_patient_id'):
             app_fhir_patient = lookup_identified_patient(upstream_response.json())
             if app_fhir_patient:
-                set_session_value('app_fhir_patient_id', app_fhir_patient.id)
+                set_session_value('app_fhir_patient_id', app_fhir_patient['id'])
 
     persist_response.delay(upstream_response.json())
     fhir_logger.info({
