@@ -58,7 +58,7 @@ def lookup_identified_patient(launch_patient):
 
     :returns: secondary patient if an identifier match is found, otherwise None
     """
-    launch_system = current_app.config.get("LAUNCH_MRN_SYSTEM")
+    launch_system = current_app.config.get("LAUNCH_FHIR_MRN_SYSTEM")
     app_system = current_app.config.get("APP_FHIR_MRN_SYSTEM")
     app_fhir = current_app.config.get("APP_FHIR_URL")
 
