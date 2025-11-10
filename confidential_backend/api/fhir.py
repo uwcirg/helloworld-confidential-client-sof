@@ -27,38 +27,6 @@ def collate_results(*result_sets):
     return results
 
 
-@blueprint.route(f'{r4prefix}/Patient/<string:id>')
-def patient_by_id(id):
-    from confidential_backend.cachelaunchresponse import persist_response
-    base_url = get_session_value('iss')
-    key = f'patient_{id}'
-    value = get_session_value(key)
-    if value:
-        return value
-
-    patient_url = f'{base_url}/Patient/{id}'
-
-    upstream_headers = {}
-
-    for header_name in PROXY_HEADERS:
-        if header_name in request.headers:
-            upstream_headers[header_name] = request.headers[header_name]
-
-    response = requests.get(
-        url=patient_url,
-        headers=upstream_headers,
-    )
-    response.raise_for_status()
-    persist_response.delay(response.json())
-    fhir_logger = getLogger()
-    fhir_logger.info(
-        {"message": "response", "fhir": response.json()})
-    patient_fhir = response.json()
-    # TODO when possible w/o session cookie: set_session_value(key, patient_fhir)
-
-    return patient_fhir
-
-
 @blueprint.route('/fhir-router/', defaults={'relative_path': '', 'session_id': None}, methods=SUPPORTED_METHODS)
 @blueprint.route('/fhir-router/<string:session_id>/<path:relative_path>', methods=SUPPORTED_METHODS)
 @blueprint.route('/fhir-router/<string:session_id>/', defaults={'relative_path': ''}, methods=SUPPORTED_METHODS)
