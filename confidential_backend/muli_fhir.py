@@ -95,7 +95,7 @@ def secondary_fhir_server_request(request_path, launch_patient_id, headers, orig
 
     # Correct Patient.id for secondary server
     # The original request prior to request_path names unwanted details
-    full_path = original_request[original_request.find(request_path):]
+    full_path = original_request[original_request.url.find(request_path):]
     app_patient_id = get_session_value('app_fhir_patient_id')
     improved_path = adjust_patient_query(full_path, launch_patient_id, app_patient_id)
     secondary_fhir_url = '/'.join((current_app.config.get("APP_FHIR_URL"), improved_path))
