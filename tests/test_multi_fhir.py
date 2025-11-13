@@ -17,9 +17,18 @@ def test_secondary_patient_lookup(mock_get, app):
     }
     app_patient = deepcopy(launch_patient)
     app_patient["identifier"] = [ {"system": app_system, "value": mrn} ]
+    search_result = {
+        "resourceType": "Bundle",
+        "total": 1,
+        "entry": [
+            {
+                "resource": app_patient
+            }
+        ]
+    }
 
     mock_response = mock_get.return_value
-    mock_response.json.return_value = app_patient
+    mock_response.json.return_value = search_result
     mock_response.status_code = 200
 
     app.config["LAUNCH_FHIR_MRN_SYSTEM"] = launch_system
