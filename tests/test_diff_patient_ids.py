@@ -1,4 +1,4 @@
-from confidential_backend.muli_fhir import adjust_patient_query
+from confidential_backend.multi_fhir import adjust_patient_query
 
 patient_A = "1234abcd"
 patient_B = "abc"

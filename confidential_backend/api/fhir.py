@@ -6,7 +6,7 @@ from flask_cors import cross_origin
 from confidential_backend import PROXY_HEADERS
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
-from confidential_backend.muli_fhir import lookup_identified_patient, secondary_fhir_server_request
+from confidential_backend.multi_fhir import lookup_identified_patient, secondary_fhir_server_request
 from confidential_backend.wrapped_session import get_session_value, set_session_value
 
 blueprint = Blueprint('fhir', __name__)

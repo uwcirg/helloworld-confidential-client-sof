@@ -86,7 +86,7 @@ def lookup_identified_patient(launch_patient):
         current_app.logger.debug(f"not able to locate match for launch_patient,mrn {launch_patient['id']},{mrn}")
         return None
     if bundle['total'] > 1:
-        current_app.logger.error(f"mulitiple patient matches for MRN {mrn} ; can't match multiple!")
+        current_app.logger.error(f"multiple patient matches for MRN {mrn} ; can't match multiple!")
     match = bundle['entry'][0]['resource']
     assert match['resourceType'] == 'Patient'
     current_app.logger.debug(
