@@ -72,14 +72,26 @@ def lookup_identified_patient(launch_patient):
             break
 
     if not mrn:
-        current_app.logger.info(f"Launch patient {launch_patient.id} does not have MRN matching system {launch_system}")
+        current_app.logger.info(f"Launch patient {launch_patient['id']} does not have MRN matching system {launch_system}")
         return
 
     request_url = f"{app_fhir}/Patient"
     params = {"identifier": f"{app_system}|{mrn}"}
     response = requests.get(request_url, params=params)
     response.raise_for_status()
-    return response.json()
+    # search returns a bundle - contents of exactly 1 indicates a match
+    bundle = response.json()
+    assert bundle['resourceType'] == 'Bundle'
+    if bundle['total'] == 0:
+        current_app.logger.debug(f"not able to locate match for launch_patient,mrn {launch_patient['id']},{mrn}")
+        return None
+    if bundle['total'] > 1:
+        current_app.logger.error(f"mulitiple patient matches for MRN {mrn} ; can't match multiple!")
+    match = bundle['entry'][0]['resource']
+    assert match['resourceType'] == 'Patient'
+    current_app.logger.debug(
+        f"mapped launch patient {launch_patient['id']} to {match['id']}")
+    return match
 
 
 def secondary_fhir_server_request(request_path, launch_patient_id, headers, original_request):
