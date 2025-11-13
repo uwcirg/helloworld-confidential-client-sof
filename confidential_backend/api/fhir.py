@@ -86,7 +86,10 @@ def route_fhir(relative_path, session_id):
         params=request.args,
         json=request.json if request.method in ('POST', 'PUT') else None
     )
-    if empty_response(upstream_response) and current_app.config.get('APP_FHIR_URL'):
+    if (
+            empty_response(upstream_response) and
+            current_app.config.get('APP_FHIR_URL') and
+            get_session_value('app_fhir_patient_id')):
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = secondary_fhir_server_request(
             request_path=relative_path,
