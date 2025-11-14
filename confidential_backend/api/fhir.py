@@ -58,6 +58,11 @@ def route_fhir(relative_path, session_id):
     g.session_id = session_id
     current_app.logger.debug('received session_id as path parameter: %s', session_id)
 
+    if relative_path == '':
+        # when the relative path beyond the flask route and session_id is only
+        # query string parameters, the route parsing fails to pick them up.  rebuild
+        relative_path = '?' + request.query_string.decode() if request.query_string else ''
+
     # prefer patient ID baked into access token JWT by EHR; fallback to initial transparent launch token for fEMR
     patient_id = get_session_value('token_response', {}).get('patient') or get_session_value('launch_token_patient')
     if not patient_id:
