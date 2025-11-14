@@ -35,6 +35,11 @@ def empty_response(response):
     """
     if response.status_code == 404:
         return True
+    if response.status_code == 410:
+        # when paging through the secondary servers response,
+        # the launch FHIR returns a 410 as it doesn't recognize
+        # the next page reference
+        return True
     results = response.json()
     if results.get('resourceType') == 'Bundle':
         return results.get('total', -1) == 0
