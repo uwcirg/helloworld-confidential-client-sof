@@ -31,7 +31,7 @@ def test_secondary_patient_lookup(mock_get, app):
     mock_response.json.return_value = search_result
     mock_response.status_code = 200
 
-    app.config["LAUNCH_FHIR_MRN_SYSTEM"] = launch_system
+    app.config["LAUNCH_FHIR_MRN_SYSTEMS"] = launch_system
     app.config["APP_FHIR_MRN_SYSTEM"] = app_system
     app.config["APP_FHIR_URL"] = app_fhir_url
 
