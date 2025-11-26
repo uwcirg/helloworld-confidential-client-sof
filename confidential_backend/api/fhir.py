@@ -33,6 +33,10 @@ def empty_response(response):
     :param response: response from FHIR server
     :returns: True if the response is empty or 404, False otherwise
     """
+    if response.status_code == 400:
+        # Requests for Questionnaire raises BadRequest.  Swallow
+        # to give secondary FHIR servers a chance to respond
+        return True
     if response.status_code == 404:
         return True
     if response.status_code == 410:
