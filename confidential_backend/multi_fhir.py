@@ -58,21 +58,21 @@ def lookup_identified_patient(launch_patient):
 
     :returns: secondary patient if an identifier match is found, otherwise None
     """
-    launch_system = current_app.config.get("LAUNCH_FHIR_MRN_SYSTEM")
+    launch_systems = current_app.config.get("LAUNCH_FHIR_MRN_SYSTEMS")
     app_system = current_app.config.get("APP_FHIR_MRN_SYSTEM")
     app_fhir = current_app.config.get("APP_FHIR_URL")
 
-    if not launch_system and app_system and app_fhir:
+    if not launch_systems and app_system and app_fhir:
         return  # TODO: should we raise or silently allow single FHIR?
 
     mrn = None
     for ident in launch_patient.get("identifier", []):
-        if ident.get("system") == launch_system:
+        if ident.get("system") in launch_systems:
             mrn = ident["value"]
             break
 
     if not mrn:
-        current_app.logger.info(f"Launch patient {launch_patient['id']} does not have MRN matching system {launch_system}")
+        current_app.logger.info(f"Launch patient {launch_patient['id']} does not have MRN matching system {launch_systems}")
         return
 
     request_url = f"{app_fhir}/Patient"
