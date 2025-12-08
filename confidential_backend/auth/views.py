@@ -199,7 +199,10 @@ def launch():
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
-    redirect_url = url_for('auth.authorize', _external=True)
+    # include the session_id as the request may hit a different thread
+
+    session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
+    redirect_url = url_for('auth.authorize', session_id=session_id, _external=True)
 
     current_app.logger.debug('redirecting to EHR Authz. will return to: %s', redirect_url)
 
