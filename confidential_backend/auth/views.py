@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, redirect, request, url_for, session
+from flask import Blueprint, current_app, g, redirect, request, url_for, session
 from flask_cors import cross_origin
 import json
 import requests
@@ -228,6 +228,11 @@ def authorize():
             'error_description': request.args['error_description'],
         }
         return error_details, 400
+
+    # if session_id included, set for use within this thread, including by authlib
+    if 'session_id' in request.args:
+        g.session_id = request.args['session_id']
+
     # authlib persists OAuth client details via secure cookie
     # if not '_sof_authlib_state_' in session:
         # return 'authlib state cookie missing; restart auth flow', 400
