@@ -196,6 +196,7 @@ def launch():
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
+    session['sof_client_params'] = sof_client_params
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
@@ -232,6 +233,11 @@ def authorize():
     # if session_id included, set for use within this thread, including by authlib
     if 'session_id' in request.args:
         g.session_id = request.args['session_id']
+
+    # if we land in a different thread of execution, need to re-register
+    sof_client_params = session['sof_client_params']
+    if sof_client_params['name'] not in oauth:
+        oauth.register(**sof_client_params)
 
     # authlib persists OAuth client details via secure cookie
     # if not '_sof_authlib_state_' in session:
