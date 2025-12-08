@@ -238,10 +238,8 @@ def authorize():
     # if we land in a different thread of execution, need to re-register
     sof_client_params = session['sof_client_params']
     if sof_client_params['name'] not in oauth:
-        current_app.logger.debug("re-register client app")
+        oauth.init_app(current_app)
         oauth.register(**sof_client_params)
-    else:
-        current_app.logger.debug("client app already registered")
 
     # authlib persists OAuth client details via secure cookie
     # if not '_sof_authlib_state_' in session:
