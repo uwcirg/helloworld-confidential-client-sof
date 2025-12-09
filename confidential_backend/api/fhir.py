@@ -121,12 +121,11 @@ def route_fhir(relative_path, session_id):
     upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
-        if True:  # TODO: this isn't getting reset between /launch sessions: not get_session_value('app_fhir_patient_id'):
-            app_fhir_patient_id = None
+        if not get_session_value('app_fhir_patient_id'):
             app_fhir_patient = lookup_identified_patient(upstream_response.json())
             if app_fhir_patient:
                 app_fhir_patient_id = app_fhir_patient['id']
-            set_session_value('app_fhir_patient_id', app_fhir_patient_id)
+                set_session_value('app_fhir_patient_id', app_fhir_patient_id)
 
     persist_response.delay(upstream_response.json())
     fhir_logger.info({
