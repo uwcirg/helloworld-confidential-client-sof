@@ -59,7 +59,6 @@ def get_extension_value(url, extensions):
 def discover_sof_client_params(fhir_base_url):
     default_client_config = {
         'name': 'sof',
-        'compliance_fix': debugging_compliance_fix,
         'client_kwargs': {'scope': current_app.config['SOF_CLIENT_SCOPES']},
     }
 
@@ -138,26 +137,6 @@ def bytes_to_json(byte_string):
     filter = current_app.config.get('AUTH_TOKEN_LOG_FILTER') or AUTH_TOKEN_LOG_FILTER
     keepers = {k:v for k,v in json_data.items() if k not in filter}
     return keepers
-
-
-def debugging_compliance_fix(session):
-    def _fix(response):
-        current_app.logger.debug('access_token request url: %s', response.request.url)
-        current_app.logger.debug('access_token request headers: %s', response.request.headers)
-        current_app.logger.debug('access_token request body: %s', response.request.body)
-
-        current_app.logger.debug('access_token response: %s', response)
-        current_app.logger.debug('access_token response.status_code: %s', response.status_code)
-        current_app.logger.debug('access_token response.content: %s', response.content)
-
-        audit_entry(
-            "access_token content",
-            extra={'tags':['JWT', "authorize", "token"],
-                   'content': bytes_to_json(response.content)})
-        response.raise_for_status()
-
-        return response
-    session.register_compliance_hook('access_token_response', _fix)
 
 
 @blueprint.route('/launch')
