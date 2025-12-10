@@ -215,8 +215,10 @@ def authorize():
         g.session_id = request.args['session_id']
 
     # if we land in a different thread of execution, need to re-register
+    # NB: peering into oauth's internal `_registry` dict a no-no, but
+    # at time of implementation, no other mechanism was found
     sof_client_params = session['sof_client_params']
-    if sof_client_params['name'] not in oauth:
+    if not oauth._registry.get(sof_client_params['name']):
         oauth.init_app(current_app)
         oauth.register(**sof_client_params)
 
