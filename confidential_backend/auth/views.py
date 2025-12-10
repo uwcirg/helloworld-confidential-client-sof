@@ -145,6 +145,9 @@ def launch():
     SMART-on-FHIR launch endpoint
     set /auth/launch as SoF App Launch URL
     """
+    # being the effective reset from any previous launch, clear session data
+    session.clear()
+
     iss = request.args['iss']
     current_app.logger.debug('iss from EHR: %s', iss)
     session['iss'] = iss
