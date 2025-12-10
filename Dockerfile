@@ -15,4 +15,8 @@ ENV FLASK_APP=confidential_backend.app:create_app() \
 
 EXPOSE "${PORT}"
 
-CMD gunicorn --bind "0.0.0.0:${PORT:-8000}" ${FLASK_APP}
+# launch workers based on number of CPUs: 2n+1
+CMD gunicorn \
+    --workers="$((2*$(nproc)+1))" \
+    --bind "0.0.0.0:${PORT:-8000}" \
+${FLASK_APP}
