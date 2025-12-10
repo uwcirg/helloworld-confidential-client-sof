@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, redirect, request, url_for, session
+from flask import Blueprint, current_app, g, redirect, request, url_for, session
 from flask_cors import cross_origin
 import json
 import requests
@@ -59,7 +59,6 @@ def get_extension_value(url, extensions):
 def discover_sof_client_params(fhir_base_url):
     default_client_config = {
         'name': 'sof',
-        'compliance_fix': debugging_compliance_fix,
         'client_kwargs': {'scope': current_app.config['SOF_CLIENT_SCOPES']},
     }
 
@@ -140,26 +139,6 @@ def bytes_to_json(byte_string):
     return keepers
 
 
-def debugging_compliance_fix(session):
-    def _fix(response):
-        current_app.logger.debug('access_token request url: %s', response.request.url)
-        current_app.logger.debug('access_token request headers: %s', response.request.headers)
-        current_app.logger.debug('access_token request body: %s', response.request.body)
-
-        current_app.logger.debug('access_token response: %s', response)
-        current_app.logger.debug('access_token response.status_code: %s', response.status_code)
-        current_app.logger.debug('access_token response.content: %s', response.content)
-
-        audit_entry(
-            "access_token content",
-            extra={'tags':['JWT', "authorize", "token"],
-                   'content': bytes_to_json(response.content)})
-        response.raise_for_status()
-
-        return response
-    session.register_compliance_hook('access_token_response', _fix)
-
-
 @blueprint.route('/launch')
 def launch():
     """
@@ -196,10 +175,14 @@ def launch():
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
+    session['sof_client_params'] = sof_client_params
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
-    redirect_url = url_for('auth.authorize', _external=True)
+    # include the session_id as the request may hit a different thread
+
+    session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
+    redirect_url = url_for('auth.authorize', session_id=session_id, _external=True)
 
     current_app.logger.debug('redirecting to EHR Authz. will return to: %s', redirect_url)
 
@@ -225,6 +208,20 @@ def authorize():
             'error_description': request.args['error_description'],
         }
         return error_details, 400
+
+    # if session_id included, set for use within this thread, including by authlib
+    if 'session_id' in request.args:
+        current_app.logger.debug(f'use session_id {request.args["session_id"]} from authorize param')
+        g.session_id = request.args['session_id']
+
+    # if we land in a different thread of execution, need to re-register
+    # NB: peering into oauth's internal `_registry` dict a no-no, but
+    # at time of implementation, no other mechanism was found
+    sof_client_params = session['sof_client_params']
+    if not oauth._registry.get(sof_client_params['name']):
+        oauth.init_app(current_app)
+        oauth.register(**sof_client_params)
+
     # authlib persists OAuth client details via secure cookie
     # if not '_sof_authlib_state_' in session:
         # return 'authlib state cookie missing; restart auth flow', 400
