@@ -19,6 +19,16 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # URL scheme to use outside of request context
 PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", 'http')
 
+SECONDARY_SOURCE_STRATEGIES = [
+    {
+        "name": "app",
+        "class": "confidential_backend.secondary_fhir_strategy.SecondaryFhirStrategy",
+        "launch_mrn_systems": os.getenv("LAUNCH_FHIR_MRN_SYSTEMS","").split(","),
+        "mrn_system": os.getenv("APP_FHIR_MRN_SYSTEM"),
+        "server_url": os.getenv("APP_FHIR_URL"),
+    },
+]
+
 SESSION_TYPE = os.getenv("SESSION_TYPE", 'redis')
 SESSION_REDIS = redis.from_url(os.getenv("SESSION_REDIS", "redis://127.0.0.1:6379"))
 SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN")

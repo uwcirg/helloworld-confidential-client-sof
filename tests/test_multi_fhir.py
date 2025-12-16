@@ -1,10 +1,10 @@
 """Tests for multiple FHIR endpoints."""
 from copy import deepcopy
 from unittest.mock import patch
-from confidential_backend.multi_fhir import lookup_identified_patient
+from confidential_backend.secondary_fhir_strategy import SecondaryFhirStrategy
 
 
-@patch("confidential_backend.multi_fhir.requests.get")
+@patch("confidential_backend.secondary_fhir_strategy.requests.get")
 def test_secondary_patient_lookup(mock_get, app):
     launch_system = "http://launch/system/mrn"
     app_system = "http://app/system/mrn"
@@ -31,12 +31,14 @@ def test_secondary_patient_lookup(mock_get, app):
     mock_response.json.return_value = search_result
     mock_response.status_code = 200
 
-    app.config["LAUNCH_FHIR_MRN_SYSTEMS"] = f"uri:bogus,{launch_system},http://silly.org"
-    app.config["APP_FHIR_MRN_SYSTEM"] = app_system
-    app.config["APP_FHIR_URL"] = app_fhir_url
-
+    secondary_fhir_strategy = SecondaryFhirStrategy(
+        name="TestStrategy",
+        server_url=app_fhir_url,
+        mrn_system=app_system,
+        launch_mrn_systems=f"uri:bogus,{launch_system},http://silly.org",
+    )
     with app.app_context():
-        result = lookup_identified_patient(launch_patient)
+        result = secondary_fhir_strategy.lookup_identified_patient(launch_patient)
 
     expected_url = '/'.join((app_fhir_url, "Patient"))
     expected_params = {"identifier": f"{app_system}|{mrn}"}

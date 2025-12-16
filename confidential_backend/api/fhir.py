@@ -4,10 +4,10 @@ from flask import Blueprint, current_app, g, request
 from flask_cors import cross_origin
 
 from confidential_backend import PROXY_HEADERS
+from confidential_backend.extensions import secondary_sources
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
-from confidential_backend.multi_fhir import lookup_identified_patient, secondary_fhir_server_request
-from confidential_backend.wrapped_session import get_session_value, set_session_value
+from confidential_backend.wrapped_session import get_session_value
 
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
@@ -100,32 +100,33 @@ def route_fhir(relative_path, session_id):
         params=request.args,
         json=request.json if request.method in ('POST', 'PUT') else None
     )
-    if (
-            empty_response(upstream_response) and
-            current_app.config.get('APP_FHIR_URL') and
-            get_session_value('app_fhir_patient_id')):
+    if empty_response(upstream_response) and secondary_sources:
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
-        secondary_response = secondary_fhir_server_request(
-            request_path=relative_path,
-            launch_patient_id=patient_id,
-            headers=upstream_headers,  # TODO: need these adjust for other FHIR server?
-            original_request=request
-        )
-        secondary_response.raise_for_status()
-        fhir_logger.info({
-            "message": "response",
-            "fhir_server": "APP FHIR",
-            "fhir": secondary_response.json()})
-        return secondary_response.json()
+        secondary_response = None
+        for source in secondary_sources:
+            secondary_response = source.server_request(
+                request_path=relative_path,
+                launch_patient_id=patient_id,
+                headers=upstream_headers,
+                original_request=request
+            )
+            secondary_response.raise_for_status()
+            fhir_logger.info({
+                "message": "response",
+                "fhir_server": source.name,
+                "fhir": secondary_response.json()})
+            if not source.empty_response(secondary_response):
+                # only continue on additional sources without results
+                break
+
+        return secondary_response and secondary_response.json()
 
     upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
-        if not get_session_value('app_fhir_patient_id'):
-            app_fhir_patient = lookup_identified_patient(upstream_response.json())
-            if app_fhir_patient:
-                app_fhir_patient_id = app_fhir_patient['id']
-                set_session_value('app_fhir_patient_id', app_fhir_patient_id)
+        # for all configured secondary sources
+        for source in secondary_sources:
+            source.lookup_identified_patient(upstream_response.json())
 
     persist_response.delay(upstream_response.json())
     fhir_logger.info({

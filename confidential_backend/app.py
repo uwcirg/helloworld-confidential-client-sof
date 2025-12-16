@@ -7,7 +7,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from confidential_backend import auth, api
 from confidential_backend.audit import audit_entry, audit_log_init
-from confidential_backend.extensions import oauth, sess
+from confidential_backend.dynamic_factory import load_strategies
+from confidential_backend.extensions import oauth, secondary_sources, sess
 
 
 def create_app(testing=False, cli=False):
@@ -22,6 +23,7 @@ def create_app(testing=False, cli=False):
     configure_extensions(app, cli)
     register_blueprints(app)
     configure_proxy(app)
+    configure_secondary_sources(app)
 
     return app
 
@@ -77,3 +79,8 @@ def configure_proxy(app):
             # trust X-Forwarded-Port
             x_port=1,
         )
+
+
+def configure_secondary_sources(app):
+    """Add any configured additional sources, beyond the required launch FHIR server"""
+    secondary_sources.extend(load_strategies(app))
