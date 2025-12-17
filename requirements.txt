@@ -74,6 +74,7 @@ markupsafe==3.0.2
     #   jinja2
     #   werkzeug
 msgpack==1.1.2
+    # via confidential_backend (setup.cfg)
 msgspec==0.19.0
     # via flask-session
 packaging==25.0
