@@ -104,6 +104,10 @@ def route_fhir(relative_path, session_id):
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = None
         for source in secondary_sources:
+            # can't continue without a patient_id for this server
+            if not source.translated_patient_id():
+                continue
+
             secondary_response = source.server_request(
                 request_path=relative_path,
                 launch_patient_id=patient_id,
@@ -119,7 +123,8 @@ def route_fhir(relative_path, session_id):
                 # only continue on additional sources without results
                 break
 
-        return secondary_response and secondary_response.json()
+        if secondary_response:
+            return secondary_response.json()
 
     upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):

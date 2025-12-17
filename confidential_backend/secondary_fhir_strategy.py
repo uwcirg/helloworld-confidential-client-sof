@@ -159,10 +159,6 @@ class SecondaryFhirStrategy(SourceStrategy):
 
         :returns: executed request - caller responsible for handling errors and extracting results
         """
-        # can't continue without a patient_id for this server
-        if not self.translated_patient_id():
-            return
-
         # Correct Patient.id for this server
         # The original request prior to request_path names unwanted details
         full_path = original_request.url[original_request.url.find(request_path):]

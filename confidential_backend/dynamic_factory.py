@@ -11,7 +11,7 @@ def load_class(path: str):
 
 
 def load_strategies(app):
-    strategies = {}
+    strategies = []
 
     for cfg in app.config["SECONDARY_SOURCE_STRATEGIES"]:
         name = cfg["name"]
@@ -20,6 +20,6 @@ def load_strategies(app):
         kwargs.pop("class")
         kwargs.pop("name")
 
-        strategies[name] = cls(name, **kwargs)
+        strategies.append(cls(name, **kwargs))
 
     return strategies
