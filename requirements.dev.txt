@@ -28,6 +28,8 @@ cryptography==46.0.1
     #   python-jose
 ecdsa==0.14.1
     # via python-jose
+fhir-smart-scopes==0.0.2
+    # via confidential_backend (setup.cfg)
 flask==3.1.2
     # via
     #   confidential_backend (setup.cfg)

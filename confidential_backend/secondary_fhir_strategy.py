@@ -1,4 +1,5 @@
 """Source Strategy implementation for a FHIR server in a secondary (non launch) role."""
+from fhir.smart.scopes import scopes
 import re
 import requests
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
@@ -6,6 +7,7 @@ from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
 from flask import current_app, has_request_context
 
 from confidential_backend.wrapped_session import get_session_value, set_session_value
+from confidential_backend.scope import request_allowed
 from confidential_backend.source_strategy import SourceStrategy
 
 class SecondaryFhirStrategy(SourceStrategy):
@@ -16,6 +18,7 @@ class SecondaryFhirStrategy(SourceStrategy):
         self._server_url = kwargs.get('server_url')
         self._mrn_system = kwargs.get('mrn_system')
         self._launch_mrn_systems = kwargs.get('launch_mrn_systems')
+        self._scopes = scopes(kwargs.get('scopes', '*/*.cruds'))
 
     def adjust_patient_query(self, full_path, launch_pid):
         """Given request path and launch patient id, return query for implementation source
@@ -57,6 +60,9 @@ class SecondaryFhirStrategy(SourceStrategy):
             query = query._replace(query=urlencode(updated_query))
 
         return '/'.join((self._server_url, urlunparse(query)))
+
+    def allowed_request(self, request_scope):
+        return request_allowed(request_scope, self._scopes)
 
     def empty_response(self, response):
         """Returns true if the response is empty, false otherwise.

@@ -33,6 +33,10 @@ class SourceStrategy(ABC):
         """
         pass
 
+    def allowed_request(self, request_scope):
+        """Returns true if server is configured to allow requested scope"""
+        pass
+
     def empty_response(self, response):
         """Returns true if the response is empty, false otherwise."""
         pass

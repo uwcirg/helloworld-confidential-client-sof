@@ -2,11 +2,13 @@ import requests
 
 from flask import Blueprint, current_app, g, request
 from flask_cors import cross_origin
+from fhir.smart.scopes import scopes
 
 from confidential_backend import PROXY_HEADERS
 from confidential_backend.extensions import secondary_sources
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
+from confidential_backend.scope import request_allowed, request_scope
 from confidential_backend.wrapped_session import get_session_value
 
 blueprint = Blueprint('fhir', __name__)
@@ -93,19 +95,27 @@ def route_fhir(relative_path, session_id):
             f'{upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
 
     fhir_logger = getLogger()
-    upstream_response = requests.request(
-        url=upstream_fhir_url,
-        method=request.method,
-        headers=upstream_headers,
-        params=request.args,
-        json=request.json if request.method in ('POST', 'PUT') else None
-    )
-    if empty_response(upstream_response) and secondary_sources:
+    allowed_scopes = scopes(current_app.config['LAUNCH_FHIR_SCOPES'])
+    req_scope = request_scope(context="patient", request_path=relative_path, http_method=request.method)
+    allowed_launch_request = request_allowed(req_scope, allowed_scopes)
+
+    if allowed_launch_request:
+        upstream_response = requests.request(
+            url=upstream_fhir_url,
+            method=request.method,
+            headers=upstream_headers,
+            params=request.args,
+            json=request.json if request.method in ('POST', 'PUT') else None
+        )
+    if not allowed_launch_request or empty_response(upstream_response) and secondary_sources:
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = None
         for source in secondary_sources:
             # can't continue without a patient_id for this server
             if not source.translated_patient_id():
+                continue
+
+            if not source.allowed_request(req_scope):
                 continue
 
             secondary_response = source.server_request(
