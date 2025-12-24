@@ -18,7 +18,7 @@ class SecondaryFhirStrategy(SourceStrategy):
         self._server_url = kwargs.get('server_url')
         self._mrn_system = kwargs.get('mrn_system')
         self._launch_mrn_systems = kwargs.get('launch_mrn_systems')
-        self._scopes = scopes(kwargs.get('scopes', '*/*.cruds'))
+        self._scopes = scopes(kwargs.get('scopes', 'patient/*.cruds system/*.cruds user/*.cruds'))
 
     def adjust_patient_query(self, full_path, launch_pid):
         """Given request path and launch patient id, return query for implementation source
