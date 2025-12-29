@@ -1,5 +1,5 @@
 from pytest import fixture
-from confidential_backend.secondary_fhir_strategy import SecondaryFhirStrategy
+from confidential_backend.source_strategies.secondary_fhir_strategy import SecondaryFhirStrategy
 
 patient_A = "1234abcd"
 patient_B = "abc"

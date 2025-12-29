@@ -8,7 +8,7 @@ from flask import current_app, has_request_context
 
 from confidential_backend.wrapped_session import get_session_value, set_session_value
 from confidential_backend.scope import request_allowed
-from confidential_backend.source_strategy import SourceStrategy
+from confidential_backend.source_strategies.source_strategy import SourceStrategy
 
 class SecondaryFhirStrategy(SourceStrategy):
     def __init__(self, name, **kwargs):

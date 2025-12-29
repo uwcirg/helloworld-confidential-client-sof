@@ -1,10 +1,10 @@
 """Tests for multiple FHIR endpoints."""
 from copy import deepcopy
 from unittest.mock import patch
-from confidential_backend.secondary_fhir_strategy import SecondaryFhirStrategy
+from confidential_backend.source_strategies.secondary_fhir_strategy import SecondaryFhirStrategy
 
 
-@patch("confidential_backend.secondary_fhir_strategy.requests.get")
+@patch("confidential_backend.source_strategies.secondary_fhir_strategy.requests.get")
 def test_secondary_patient_lookup(mock_get, app):
     launch_system = "http://launch/system/mrn"
     app_system = "http://app/system/mrn"
