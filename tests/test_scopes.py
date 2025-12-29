@@ -9,6 +9,12 @@ def test_messy_relative_path():
     assert scope_tuple[1] == 'Medication'
 
 
+def test_resource_by_id_scope():
+    request_path = "Patient/5ee05359-57bf-4cee-8e89-91382c07e162"
+    req_scope = request_scope(context="patient", request_path=request_path, http_method='GET')
+    assert req_scope
+
+
 def test_second_page():
     request_path = "?_getpages=311f6eb3-d13e-4abc-863f-1882032da6e5&_getpagesoffset=40&_count=20&_pretty=true&_bundletype=searchset"
     req_scope = request_scope(context="patient", request_path=request_path, http_method='GET')

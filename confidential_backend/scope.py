@@ -30,6 +30,9 @@ def request_scope(context: str, request_path: str, http_method: str) -> scopes:
         resource = "Patient"
 
     cruds = http_method_to_access(http_method)
+    if '/' in resource:
+        # handle request by id
+        resource = resource.split('/')[0]
     try:
         return scopes(f"{context}/{resource}.{cruds}")
     except ValueError as ve:
