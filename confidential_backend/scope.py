@@ -1,5 +1,6 @@
 """Module to manage scope definitions and checks"""
 from fhir.smart.scopes import scopes
+from flask import current_app
 
 
 def http_method_to_access(method: str) -> str:
@@ -29,7 +30,11 @@ def request_scope(context: str, request_path: str, http_method: str) -> scopes:
         resource = "Patient"
 
     cruds = http_method_to_access(http_method)
-    return scopes(f"{context}/{resource}.{cruds}")
+    try:
+        return scopes(f"{context}/{resource}.{cruds}")
+    except ValueError as ve:
+        current_app.logger.error(f"Failed to generate scopes: {context}/{resource}.{cruds}  exception: {ve}")
+        raise ve
 
 def request_allowed(request_scope, server_scope: scopes) -> bool:
     """Check if request is allowed on server

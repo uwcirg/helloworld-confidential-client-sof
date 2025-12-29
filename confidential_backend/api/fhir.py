@@ -95,8 +95,15 @@ def route_fhir(relative_path, session_id):
             f'{upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
 
     fhir_logger = getLogger()
-    allowed_scopes = scopes(current_app.config['LAUNCH_FHIR_SCOPES'])
-    req_scope = request_scope(context="patient", request_path=relative_path, http_method=request.method)
+    try:
+        allowed_scopes = scopes(current_app.config['LAUNCH_FHIR_SCOPES'])
+    except ValueError as ve:
+        current_app.logger.error(
+            f"invalid LAUNCH_FHIR_SCOPES: {current_app.config['LAUNCH_FHIR_SCOPES']} "
+            f"exception: {ve}")
+        raise ve
+    req_scope = request_scope(
+        context="patient", request_path=relative_path, http_method=request.method)
     allowed_launch_request = request_allowed(req_scope, allowed_scopes)
 
     if allowed_launch_request:
