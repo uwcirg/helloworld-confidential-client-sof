@@ -12,12 +12,23 @@ DEBUG_OUTPUT_DIR = os.getenv("DEBUG_OUTPUT_DIR", '/tmp')
 FHIR_RESOURCES_LOGFILE = os.getenv("FHIR_RESOURCES_LOGFILE")
 APP_FHIR_URL = os.getenv("APP_FHIR_URL")
 APP_FHIR_MRN_SYSTEM = os.getenv("APP_FHIR_MRN_SYSTEM")
+LAUNCH_FHIR_SCOPES = os.getenv("LAUNCH_FHIR_SCOPES", "launch/patient patient/*.cruds system/*.cruds user/*.cruds")
 LAUNCH_FHIR_MRN_SYSTEMS = os.getenv("LAUNCH_FHIR_MRN_SYSTEMS","").split(",")
 LAUNCH_CACHE_URL = os.getenv("LAUNCH_CACHE_URL")
 SERVER_NAME = os.getenv("SERVER_NAME")
 SECRET_KEY = os.getenv("SECRET_KEY")
 # URL scheme to use outside of request context
 PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", 'http')
+
+SECONDARY_SOURCE_STRATEGIES = [
+    {
+        "name": "app",
+        "class": "confidential_backend.source_strategies.secondary_fhir_strategy.SecondaryFhirStrategy",
+        "launch_mrn_systems": os.getenv("LAUNCH_FHIR_MRN_SYSTEMS","").split(","),
+        "mrn_system": os.getenv("APP_FHIR_MRN_SYSTEM"),
+        "server_url": os.getenv("APP_FHIR_URL"),
+    },
+]
 
 SESSION_TYPE = os.getenv("SESSION_TYPE", 'redis')
 SESSION_REDIS = redis.from_url(os.getenv("SESSION_REDIS", "redis://127.0.0.1:6379"))

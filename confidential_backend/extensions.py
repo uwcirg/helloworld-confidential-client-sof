@@ -6,6 +6,7 @@ from requests_cache import CachedSession
 
 oauth = OAuth()
 sess = Session()
+secondary_sources = []
 
 
 class CS_Singleton(object):

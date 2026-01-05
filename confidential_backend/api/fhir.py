@@ -2,12 +2,14 @@ import requests
 
 from flask import Blueprint, current_app, g, request
 from flask_cors import cross_origin
+from fhir.smart.scopes import scopes
 
 from confidential_backend import PROXY_HEADERS
+from confidential_backend.extensions import secondary_sources
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
-from confidential_backend.multi_fhir import lookup_identified_patient, secondary_fhir_server_request
-from confidential_backend.wrapped_session import get_session_value, set_session_value
+from confidential_backend.scope import request_allowed, request_scope
+from confidential_backend.wrapped_session import get_session_value
 
 blueprint = Blueprint('fhir', __name__)
 r4prefix = '/v/r4/fhir'
@@ -93,39 +95,60 @@ def route_fhir(relative_path, session_id):
             f'{upstream_headers} ;;; params: {request.args} ;;; json: {request.json}')
 
     fhir_logger = getLogger()
-    upstream_response = requests.request(
-        url=upstream_fhir_url,
-        method=request.method,
-        headers=upstream_headers,
-        params=request.args,
-        json=request.json if request.method in ('POST', 'PUT') else None
-    )
-    if (
-            empty_response(upstream_response) and
-            current_app.config.get('APP_FHIR_URL') and
-            get_session_value('app_fhir_patient_id')):
-        # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
-        secondary_response = secondary_fhir_server_request(
-            request_path=relative_path,
-            launch_patient_id=patient_id,
-            headers=upstream_headers,  # TODO: need these adjust for other FHIR server?
-            original_request=request
+    try:
+        allowed_scopes = scopes(current_app.config['LAUNCH_FHIR_SCOPES'])
+    except ValueError as ve:
+        current_app.logger.error(
+            f"invalid LAUNCH_FHIR_SCOPES: {current_app.config['LAUNCH_FHIR_SCOPES']} "
+            f"exception: {ve}")
+        raise ve
+    req_scope = request_scope(
+        context="patient", request_path=relative_path, http_method=request.method)
+    allowed_launch_request = request_allowed(req_scope, allowed_scopes)
+
+    if allowed_launch_request:
+        upstream_response = requests.request(
+            url=upstream_fhir_url,
+            method=request.method,
+            headers=upstream_headers,
+            params=request.args,
+            json=request.json if request.method in ('POST', 'PUT') else None
         )
-        secondary_response.raise_for_status()
-        fhir_logger.info({
-            "message": "response",
-            "fhir_server": "APP FHIR",
-            "fhir": secondary_response.json()})
-        return secondary_response.json()
+    if not allowed_launch_request or empty_response(upstream_response) and secondary_sources:
+        # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
+        secondary_response = None
+        for source in secondary_sources:
+            # can't continue without a patient_id for this server
+            if not source.translated_patient_id():
+                continue
+
+            if not source.allowed_request(req_scope):
+                continue
+
+            secondary_response = source.server_request(
+                request_path=relative_path,
+                launch_patient_id=patient_id,
+                headers=upstream_headers,
+                original_request=request
+            )
+            secondary_response.raise_for_status()
+            fhir_logger.info({
+                "message": "response",
+                "fhir_server": source.name,
+                "fhir": secondary_response.json()})
+            if not source.empty_response(secondary_response):
+                # only continue on additional sources without results
+                break
+
+        if secondary_response:
+            return secondary_response.json()
 
     upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
-        if not get_session_value('app_fhir_patient_id'):
-            app_fhir_patient = lookup_identified_patient(upstream_response.json())
-            if app_fhir_patient:
-                app_fhir_patient_id = app_fhir_patient['id']
-                set_session_value('app_fhir_patient_id', app_fhir_patient_id)
+        # for all configured secondary sources
+        for source in secondary_sources:
+            source.lookup_identified_patient(upstream_response.json())
 
     persist_response.delay(upstream_response.json())
     fhir_logger.info({
