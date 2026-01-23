@@ -68,14 +68,14 @@ def discover_sof_client_params(fhir_base_url):
         'SOF_AUTHORIZE_URL' in current_app.config.keys() and
         'SOF_JWKS_URL' in current_app.config.keys()
     ):
-        return default_client_config + {
+        return default_client_config | {
             'access_token_url': current_app.config['SOF_ACCESS_TOKEN_URL'],
             'authorize_url': current_app.config['SOF_AUTHORIZE_URL'],
             'jwks_uri': current_app.config['SOF_JWKS_URL'],
         }
 
     if "SOF_METADATA_URL" in current_app.config.keys():
-        return default_client_config + {
+        return default_client_config | {
             'server_metadata_url': current_app.config['SOF_METADATA_URL'],
         }
 
@@ -109,7 +109,7 @@ def discover_sof_client_params(fhir_base_url):
         authorize_url = get_extension_value(url='authorize', extensions=metadata_security['extension'][0]['extension'])
         token_url = get_extension_value(url='token', extensions=metadata_security['extension'][0]['extension'])
 
-    return default_client_config + {
+    return default_client_config | {
         'access_token_url': token_url,
         'authorize_url': authorize_url,
     }
