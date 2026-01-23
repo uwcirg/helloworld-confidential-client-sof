@@ -114,6 +114,8 @@ def route_fhir(relative_path, session_id):
             params=request.args,
             json=request.json if request.method in ('POST', 'PUT') else None
         )
+        upstream_response.raise_for_status()
+
     if not allowed_launch_request or empty_response(upstream_response) and secondary_sources:
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = None
@@ -143,7 +145,6 @@ def route_fhir(relative_path, session_id):
         if secondary_response:
             return secondary_response.json()
 
-    upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
         # for all configured secondary sources
