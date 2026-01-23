@@ -300,5 +300,6 @@ def after_request_func(response):
     # allow requests with cookies to auth-info endpoint
     if request.path == "/auth/auth-info":
         response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
