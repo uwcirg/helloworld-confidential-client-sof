@@ -2,6 +2,7 @@
 
 Use env var to override
 """
+import json
 import os
 import redis
 
@@ -20,7 +21,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # URL scheme to use outside of request context
 PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", 'http')
 
-SECONDARY_SOURCE_STRATEGIES = os.getenv("SECONDARY_SOURCE_STRATEGIES", [
+SECONDARY_SOURCE_STRATEGIES = json.loads(os.getenv("SECONDARY_SOURCE_STRATEGIES", json.dumps([
     {
         "name": "app",
         "class": "confidential_backend.source_strategies.secondary_fhir_strategy.SecondaryFhirStrategy",
@@ -28,7 +29,7 @@ SECONDARY_SOURCE_STRATEGIES = os.getenv("SECONDARY_SOURCE_STRATEGIES", [
         "mrn_system": os.getenv("APP_FHIR_MRN_SYSTEM"),
         "server_url": os.getenv("APP_FHIR_URL"),
     },
-])
+])))
 
 SESSION_TYPE = os.getenv("SESSION_TYPE", 'redis')
 SESSION_REDIS = redis.from_url(os.getenv("SESSION_REDIS", "redis://127.0.0.1:6379"))
