@@ -44,6 +44,14 @@ SOF_CLIENT_ID = os.getenv("SOF_CLIENT_ID")
 SOF_CLIENT_SECRET = os.getenv("SOF_CLIENT_SECRET")
 SOF_CLIENT_SCOPES = os.getenv("SOF_CLIENT_SCOPES", "patient/*.read launch/patient")
 
+# Use private_key_jwt authentication method (default: True)
+# When True, generates and uses RSA keys for client authentication
+# When False, uses client_secret authentication
+SOF_USE_PRIVATE_KEY_JWT = os.getenv("SOF_USE_PRIVATE_KEY_JWT", "true").lower() == "true"
+
+# Directory to store JWK keys (default: /tmp/jwks)
+JWK_KEY_DIR = os.getenv("JWK_KEY_DIR", "/tmp/jwks")
+
 SOF_ACCESS_TOKEN_URL = os.getenv("SOF_ACCESS_TOKEN_URL")
 SOF_AUTHORIZE_URL = os.getenv("SOF_AUTHORIZE_URL")
 SOF_JWKS_URL = os.getenv("SOF_JWKS_URL")
