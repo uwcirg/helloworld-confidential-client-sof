@@ -6,6 +6,7 @@ import requests
 from confidential_backend import PROXY_HEADERS
 from confidential_backend.audit import audit_entry
 from confidential_backend.auth.helpers import extract_payload, format_as_jwt
+from confidential_backend.auth.jwk_manager import JWKManager
 from confidential_backend.extensions import oauth
 
 
@@ -62,6 +63,28 @@ def discover_sof_client_params(fhir_base_url):
         'client_kwargs': {'scope': current_app.config['SOF_CLIENT_SCOPES']},
     }
 
+    # Configure private_key_jwt authentication if enabled
+    use_private_key_jwt = current_app.config.get('SOF_USE_PRIVATE_KEY_JWT', True)
+    if use_private_key_jwt:
+        jwk_manager = JWKManager()
+        jwk_manager.get_or_create_keys()
+        private_key_pem = jwk_manager.get_private_key_pem()
+
+        # Get JWK Set URL for client registration
+        jwks_url = url_for('auth.jwks', _external=True)
+
+        default_client_config.update({
+            'client_id': current_app.config.get('SOF_CLIENT_ID'),
+            'token_endpoint_auth_method': 'private_key_jwt',
+            'client_secret': private_key_pem,  # authlib uses client_secret for private key in PEM format
+        })
+    else:
+        # Fall back to client_secret authentication
+        default_client_config.update({
+            'client_id': current_app.config.get('SOF_CLIENT_ID'),
+            'client_secret': current_app.config.get('SOF_CLIENT_SECRET'),
+        })
+
     # explicit configuration - endpoints individually configured
     if (
         'SOF_ACCESS_TOKEN_URL' in current_app.config.keys() and
@@ -73,11 +96,17 @@ def discover_sof_client_params(fhir_base_url):
             'authorize_url': current_app.config['SOF_AUTHORIZE_URL'],
             'jwks_uri': current_app.config['SOF_JWKS_URL'],
         }
+        if use_private_key_jwt:
+            config['jwks_uri'] = jwks_url
+        return config
 
     if "SOF_METADATA_URL" in current_app.config.keys():
         return default_client_config | {
             'server_metadata_url': current_app.config['SOF_METADATA_URL'],
         }
+        if use_private_key_jwt:
+            config['jwks_uri'] = jwks_url
+        return config
 
     # no explicit configuration, try expected discovery URLs
     # try .well-known URLs first
@@ -90,10 +119,13 @@ def discover_sof_client_params(fhir_base_url):
             )
             well_known.raise_for_status()
 
-            return {
+            config = {
                 **default_client_config,
-                **{'server_metadata_url': well_known_url}
+                'server_metadata_url': well_known_url,
             }
+            if use_private_key_jwt:
+                config['jwks_uri'] = jwks_url
+            return config
         except requests.exceptions.HTTPError as e:
             pass
 
@@ -109,10 +141,13 @@ def discover_sof_client_params(fhir_base_url):
         authorize_url = get_extension_value(url='authorize', extensions=metadata_security['extension'][0]['extension'])
         token_url = get_extension_value(url='token', extensions=metadata_security['extension'][0]['extension'])
 
-    return default_client_config | {
+    config = default_client_config | {
         'access_token_url': token_url,
         'authorize_url': authorize_url,
     }
+    if use_private_key_jwt:
+        config['jwks_uri'] = jwks_url
+    return config
 
 
 def bytes_to_json(byte_string):
@@ -285,6 +320,18 @@ def auth_info():
 @blueprint.route('/users/<int:user_id>')
 def users(user_id):
     return {'ok': True}
+
+
+@blueprint.route('/.well-known/jwks.json')
+@cross_origin(allow_headers=PROXY_HEADERS)
+def jwks():
+    """
+    JWK Set endpoint for advertising public keys
+    Used for private_key_jwt client authentication method
+    """
+    jwk_manager = JWKManager()
+    jwk_manager.get_or_create_keys()
+    return jwk_manager.get_jwks()
 
 
 @blueprint.before_request
