@@ -63,18 +63,18 @@ def discover_sof_client_params(fhir_base_url):
     }
 
     # explicit configuration - endpoints individually configured
-    if (
-        'SOF_ACCESS_TOKEN_URL' in current_app.config.keys() and
-        'SOF_AUTHORIZE_URL' in current_app.config.keys() and
-        'SOF_JWKS_URL' in current_app.config.keys()
-    ):
+    if (all(
+        current_app.config.get('SOF_ACCESS_TOKEN_URL'),
+        current_app.config.get('SOF_AUTHORIZE_URL'),
+        current_app.config.get('SOF_JWKS_URL'),
+    )):
         return default_client_config | {
             'access_token_url': current_app.config['SOF_ACCESS_TOKEN_URL'],
             'authorize_url': current_app.config['SOF_AUTHORIZE_URL'],
             'jwks_uri': current_app.config['SOF_JWKS_URL'],
         }
 
-    if "SOF_METADATA_URL" in current_app.config.keys():
+    if current_app.config.get("SOF_METADATA_URL"):
         return default_client_config | {
             'server_metadata_url': current_app.config['SOF_METADATA_URL'],
         }
