@@ -63,11 +63,11 @@ def discover_sof_client_params(fhir_base_url):
     }
 
     # explicit configuration - endpoints individually configured
-    if (all(
+    if (all((
         current_app.config.get('SOF_ACCESS_TOKEN_URL'),
         current_app.config.get('SOF_AUTHORIZE_URL'),
         current_app.config.get('SOF_JWKS_URL'),
-    )):
+    ))):
         return default_client_config | {
             'access_token_url': current_app.config['SOF_ACCESS_TOKEN_URL'],
             'authorize_url': current_app.config['SOF_AUTHORIZE_URL'],
