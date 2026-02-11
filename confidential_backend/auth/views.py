@@ -231,7 +231,16 @@ def authorize():
 
     # todo: define fetch_token function that requests JSON (Accept: application/json header)
     # https://github.com/lepture/authlib/blob/master/authlib/oauth2/client.py#L154
-    token_response = oauth.sof.authorize_access_token(_format='json')
+    try:
+        token_response = oauth.sof.authorize_access_token(_format='json')
+    except requests.exceptions.HTTPError as http_err:
+        # Log request details
+        req = http_err.response.request
+        current_app.logger.debug("HTTPError occurred getting access token")
+        current_app.logger.debug(f"Response Body: {http_err.response.content}")
+
+        raise http_err
+
     extracted_id_token = extract_payload(token_response.get('id_token'))
     username = extracted_id_token.get('preferred_username')
 
