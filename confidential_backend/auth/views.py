@@ -153,28 +153,30 @@ def launch():
     session['iss'] = iss
 
     launch = request.args.get('launch')
-    if launch:
-        # launch value received from EHR
-        current_app.logger.debug('launch: %s', launch)
-        extra={'tags':['launch']}
+    if not launch:
+        error_details = {'error_description': "required querystring param `launch` missing"}
+        return error_details, 400
 
-        # Extract user and subject from encoded launch parameter if found
-        # NB this is documented to be ``an opaque handle to the EHR context
-        # is passed along to the app as part of the launch URL``
-        # the SMIT Sandbox (and fEMR) use a base64 encoded JSON object
-        payload = extract_payload(format_as_jwt(launch))
+    current_app.logger.debug('launch: %s', launch)
+    extra={'tags':['launch']}
 
-        launch_token_patient = payload.get(LAUNCH_VALUE_TO_CODE['patient'])
-        if launch_token_patient:
-            session['subject'] = f"Patient/{launch_token_patient}"
-            extra['subject'] = session['subject']
+    # Extract user and subject from encoded launch parameter if found
+    # NB this is documented to be ``an opaque handle to the EHR context
+    # is passed along to the app as part of the launch URL``
+    # the SMIT Sandbox (and fEMR) use a base64 encoded JSON object
+    payload = extract_payload(format_as_jwt(launch))
 
-        launch_token_provider = payload.get(LAUNCH_VALUE_TO_CODE['provider'])
-        if launch_token_provider:
-            session['user'] = f"Provider/{launch_token_provider}"
-            extra['user'] = session['user']
-        audit_entry("launch", extra=extra)
-        session['launch_token_patient'] = launch_token_patient
+    launch_token_patient = payload.get(LAUNCH_VALUE_TO_CODE['patient'])
+    if launch_token_patient:
+        session['subject'] = f"Patient/{launch_token_patient}"
+        extra['subject'] = session['subject']
+
+    launch_token_provider = payload.get(LAUNCH_VALUE_TO_CODE['provider'])
+    if launch_token_provider:
+        session['user'] = f"Provider/{launch_token_provider}"
+        extra['user'] = session['user']
+    audit_entry("launch", extra=extra)
+    session['launch_token_patient'] = launch_token_patient
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
