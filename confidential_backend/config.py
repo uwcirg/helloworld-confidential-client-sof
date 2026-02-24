@@ -31,6 +31,7 @@ SECONDARY_SOURCE_STRATEGIES = json.loads(os.getenv("SECONDARY_SOURCE_STRATEGIES"
     },
 ])))
 
+SESSION_PERMANENT = os.getenv("SESSION_PERMANENT", 'false').lower() == 'true'
 SESSION_TYPE = os.getenv("SESSION_TYPE", 'redis')
 SESSION_REDIS = redis.from_url(os.getenv("SESSION_REDIS", "redis://127.0.0.1:6379"))
 SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN")
