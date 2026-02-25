@@ -139,6 +139,15 @@ def bytes_to_json(byte_string):
     return keepers
 
 
+@blueprint.route('/session/reset')
+def session_reset():
+    session.clear()
+
+    return_uri = request.args.get("return_uri")
+    if return_uri:
+        return redirect(return_uri)
+    return {}
+
 @blueprint.route('/launch')
 def launch():
     """
@@ -147,6 +156,10 @@ def launch():
     """
     # being the effective reset from any previous launch, clear session data
     session.clear()
+
+    session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
+    if session_id:
+        return redirect(url_for('auth.session_reset', return_uri=request.full_path))
 
     iss = request.args['iss']
     current_app.logger.debug('iss from EHR: %s', iss)
