@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, g, redirect, request, url_for, session
+from flask import Blueprint, current_app, redirect, request, url_for, session
 from flask_cors import cross_origin
 import json
 import requests
@@ -178,14 +178,10 @@ def launch():
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
-    session['sof_client_params'] = sof_client_params
 
     # redirect URL to pass (as QS param) to EHR Authz server
     # EHR Authz server will redirect to this URL after authorization
-    # include the session_id as the request may hit a different thread
-
-    session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
-    redirect_url = url_for('auth.authorize', session_id=session_id, _external=True)
+    redirect_url = url_for('auth.authorize', _external=True)
 
     current_app.logger.debug('redirecting to EHR Authz. will return to: %s', redirect_url)
 
@@ -211,20 +207,6 @@ def authorize():
             'error_description': request.args['error_description'],
         }
         return error_details, 400
-
-    # if session_id included, set for use within this thread, including by authlib
-    if 'session_id' in request.args:
-        current_app.logger.debug(f'use session_id {request.args["session_id"]} from authorize param')
-        g.session_id = request.args['session_id']
-
-    # if we land in a different thread of execution, need to re-register
-    # NB: peering into oauth's internal `_registry` dict a no-no, but
-    # at time of implementation, no other mechanism was found
-    sof_client_params = session['sof_client_params']
-    if not oauth._registry.get(sof_client_params['name']):
-        oauth.init_app(current_app)
-        oauth.register(**sof_client_params)
-
     # authlib persists OAuth client details via secure cookie
     # if not '_sof_authlib_state_' in session:
         # return 'authlib state cookie missing; restart auth flow', 400
