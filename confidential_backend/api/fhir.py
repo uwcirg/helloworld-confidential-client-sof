@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 import requests
 
 from flask import Blueprint, current_app, g, request
@@ -46,7 +47,12 @@ def empty_response(response):
         # the launch FHIR returns a 410 as it doesn't recognize
         # the next page reference
         return True
-    results = response.json()
+    try:
+        results = response.json()
+    except JSONDecodeError as jde:
+        # rather than catch every form of exception / status code, treat
+        # a lack of valid json response as empty
+        return True
     if results.get('resourceType') == 'Bundle':
         return results.get('total', -1) == 0
     # handle servers that don't set total
