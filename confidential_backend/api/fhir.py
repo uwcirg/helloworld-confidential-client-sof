@@ -52,6 +52,7 @@ def empty_response(response):
     # handle servers that don't set total
     if results.get('resourceType') == 'Bundle' and not results.get('entry'):
         return True
+    response.raise_for_status()
     return False
 
 
@@ -143,7 +144,6 @@ def route_fhir(relative_path, session_id):
         if secondary_response:
             return secondary_response.json()
 
-    upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
         # for all configured secondary sources
