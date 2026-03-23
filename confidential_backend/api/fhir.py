@@ -132,7 +132,6 @@ def route_fhir(relative_path, session_id):
                 headers=upstream_headers,
                 original_request=request
             )
-            secondary_response.raise_for_status()
             fhir_logger.info({
                 "message": "response",
                 "fhir_server": source.name,
