@@ -1,5 +1,8 @@
 """Source Strategy implementation for a FHIR server in a secondary (non launch) role."""
+from copy import deepcopy
+
 from fhir.smart.scopes import scopes
+import json
 import re
 import requests
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
@@ -66,6 +69,42 @@ class SecondaryFhirStrategy(SourceStrategy):
             query = query._replace(query=urlencode(updated_query))
 
         return '/'.join((self._server_url, urlunparse(query)))
+
+    def adjust_patient_in_request_json(self, original_request_json, launch_pid):
+        """Correct any patient references in request body (json)
+
+        If the request body, used in PUT/POST, includes references to the launch patient id,
+        correct to this secondary source's respective patient id and return the resulting JSON.
+
+        NB this only looks at the top level of the request json for efficiency and expected use.
+
+        :param request_json: request.json, typically a FHIR Resource that may include references
+          to the launch server's patient id.
+        :param launch_pid: patient id for the patient of interest from launch server's perspective
+
+        Launch server and strategy implementation server often have different patient ids for the
+        same patient (typically linked by a secondary identifier, such as MRN).
+
+        :returns: json for equivalent request against implementation server.
+        """
+        if not original_request_json:
+            return None
+
+        corrected_patient_id = self.translated_patient_id()
+        improved_request_json = deepcopy(original_request_json)
+
+        # replace as values or reference strings, i.e. Patient/<launch_pid>
+        escaped = re.escape(launch_pid)
+        reference_pattern = re.compile(rf'(?<=/){escaped}\b')
+        for key, value in original_request_json.items():
+            if value == launch_pid:
+                improved_request_json[key] = corrected_patient_id
+            value_str = json.dumps(value)
+            if reference_pattern.search(value_str):
+                value_str = reference_pattern.sub(corrected_patient_id, value_str)
+                improved_request_json[key] = json.loads(value_str)
+
+        return improved_request_json
 
     def allowed_request(self, request_scope):
         return request_allowed(request_scope, self._scopes)
@@ -175,11 +214,16 @@ class SecondaryFhirStrategy(SourceStrategy):
         # The original request prior to request_path names unwanted details
         full_path = original_request.url[original_request.url.find(request_path):]
         secondary_fhir_url = self.adjust_patient_query(full_path, launch_patient_id)
+        secondary_request_json = None
+        if original_request.method in ('POST', 'PUT'):
+            secondary_request_json = self.adjust_patient_in_request_json(
+                original_request.json, launch_patient_id)
+
         current_app.logger.debug(f"attempt secondary FHIR request {secondary_fhir_url}")
         secondary_response = requests.request(
             url=secondary_fhir_url,
             method=original_request.method,
             headers=headers,
-            json=original_request.json if original_request.method in ('POST', 'PUT') else None
+            json=secondary_request_json,
         )
         return secondary_response
