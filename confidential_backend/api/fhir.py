@@ -150,7 +150,7 @@ def route_fhir(relative_path, session_id):
                 break
 
         if secondary_response is not None:
-            return secondary_response.json()
+            return secondary_response.json(), secondary_response.status_code
 
     if upstream_response is None:
         raise ValueError("request not allowed on launch FHIR and nothing found in secondary sources")
@@ -167,4 +167,4 @@ def route_fhir(relative_path, session_id):
         "fhir_server": "LAUNCH FHIR",
         "fhir": upstream_response.json()})
 
-    return upstream_response.json()
+    return upstream_response.json(), upstream_response.status_code
