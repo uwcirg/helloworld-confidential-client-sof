@@ -215,7 +215,7 @@ class SecondaryFhirStrategy(SourceStrategy):
         full_path = original_request.url[original_request.url.find(request_path):]
         secondary_fhir_url = self.adjust_patient_query(full_path, launch_patient_id)
         secondary_request_json = None
-        if original_request.method in ('POST', 'PUT'):
+        if original_request.method in ('POST', 'PUT', 'PATCH'):
             secondary_request_json = self.adjust_patient_in_request_json(
                 original_request.json, launch_patient_id)
 
