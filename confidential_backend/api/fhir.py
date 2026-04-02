@@ -129,6 +129,11 @@ def route_fhir(relative_path, session_id):
                 secondary_response._content = b'{"error": "Patient identifier not found"}'
                 secondary_response.headers['Content-Type'] = 'application/json'
                 secondary_response.status_code = 404
+                fhir_logger.info({
+                    "message": "response",
+                    "fhir_server": source.name,
+                    "fhir": secondary_response.json(),
+                    "status_code": secondary_response.status_code})
                 continue
 
             if not source.allowed_request(req_scope):
