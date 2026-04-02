@@ -126,7 +126,7 @@ def route_fhir(relative_path, session_id):
             if not source.translated_patient_id():
                 # generate valid 404 response given that lookup failed
                 secondary_response = requests.models.Response()
-                secondary_response._content = b'{"error": "Patient identifier not found"}'
+                secondary_response._content = b'{"error": "This patient does not yet have data reported from the CNICS PRO system. If the patient has indeed completed a CNICS PRO assessment, please write to cnics-pros@uw.edu for help."}'
                 secondary_response.headers['Content-Type'] = 'application/json'
                 secondary_response.status_code = 404
                 fhir_logger.info({
