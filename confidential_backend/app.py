@@ -83,4 +83,8 @@ def configure_proxy(app):
 
 def configure_secondary_sources(app):
     """Add any configured additional sources, beyond the required launch FHIR server"""
-    secondary_sources.extend(load_strategies(app))
+    strats = load_strategies(app)
+    for strat in strats:
+        # avoid pushing duplicates as factory calls for app and celery stack
+        if not any(s.name == strat.name for s in secondary_sources):
+            secondary_sources.append(strat)

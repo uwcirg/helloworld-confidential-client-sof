@@ -33,19 +33,22 @@ def empty_response(response):
     """Check for valid / empty response from FHIR server
 
     :param response: response from FHIR server
-    :returns: True if the response is empty or 404, False otherwise
+    :returns: True if the response is empty or has a staus >= 400, False if
+      a valid response includes at least one entry
     """
-    if response.status_code == 400:
-        # Requests for Questionnaire raises BadRequest.  Swallow
-        # to give secondary FHIR servers a chance to respond
+    if response is None:
         return True
-    if response.status_code == 404:
+
+    if response.status_code >= 400:
+        # A number of scenarios can provoke an invalid response, such
+        # as a request for a Questionnaire the end system doesn't allow,
+        # a page reference from a secondary source, or a disallowed request.
+
+        # treat all such status codes as empty responses, such that secondary
+        # sources can get a chance to respond.  errors will be handled after
+        # secondary sources, if no valid response is found.
         return True
-    if response.status_code == 410:
-        # when paging through the secondary servers response,
-        # the launch FHIR returns a 410 as it doesn't recognize
-        # the next page reference
-        return True
+
     results = response.json()
     if results.get('resourceType') == 'Bundle':
         return results.get('total', -1) == 0
@@ -104,22 +107,33 @@ def route_fhir(relative_path, session_id):
         raise ve
     req_scope = request_scope(
         context="patient", request_path=relative_path, http_method=request.method)
-    allowed_launch_request = request_allowed(req_scope, allowed_scopes)
 
-    if allowed_launch_request:
+    upstream_response = None
+    if request_allowed(req_scope, allowed_scopes):
         upstream_response = requests.request(
             url=upstream_fhir_url,
             method=request.method,
             headers=upstream_headers,
             params=request.args,
-            json=request.json if request.method in ('POST', 'PUT') else None
+            json=request.json if request.method in ('POST', 'PUT', 'PATCH') else None
         )
-    if not allowed_launch_request or empty_response(upstream_response) and secondary_sources:
+
+    if empty_response(upstream_response):
         # If no results found from upstream (aka LAUNCH) FHIR server, try secondary
         secondary_response = None
         for source in secondary_sources:
             # can't continue without a patient_id for this server
             if not source.translated_patient_id():
+                # generate valid 404 response given that lookup failed
+                secondary_response = requests.models.Response()
+                secondary_response._content = b'{"warning": "matching patient identifier not found"}'
+                secondary_response.headers['Content-Type'] = 'application/json'
+                secondary_response.status_code = 200
+                fhir_logger.info({
+                    "message": "response",
+                    "fhir_server": source.name,
+                    "fhir": secondary_response.json(),
+                    "status_code": secondary_response.status_code})
                 continue
 
             if not source.allowed_request(req_scope):
@@ -140,9 +154,11 @@ def route_fhir(relative_path, session_id):
                 # only continue on additional sources without results
                 break
 
-        if secondary_response:
-            return secondary_response.json()
+        if secondary_response is not None:
+            return secondary_response.json(), secondary_response.status_code
 
+    if upstream_response is None:
+        raise ValueError("request not allowed on launch FHIR and nothing found in secondary sources")
     upstream_response.raise_for_status()
     if relative_path.startswith('Patient'):
         # Patient lookup after launch - obtain secondary FHIR server Patient.id
@@ -156,4 +172,4 @@ def route_fhir(relative_path, session_id):
         "fhir_server": "LAUNCH FHIR",
         "fhir": upstream_response.json()})
 
-    return upstream_response.json()
+    return upstream_response.json(), upstream_response.status_code
