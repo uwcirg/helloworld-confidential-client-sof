@@ -36,6 +36,7 @@ SESSION_REDIS = redis.from_url(os.getenv("SESSION_REDIS", "redis://127.0.0.1:637
 SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN")
 SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", 'Lax')
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", 'false').lower() == 'true'
+SESSION_COOKIE_PARTITIONED = os.getenv("SESSION_COOKIE_PARTITIONED", 'false').lower() == 'true'
 
 REQUEST_CACHE_URL = os.environ.get('REQUEST_CACHE_URL', 'redis://localhost:6379/0')
 REQUEST_CACHE_EXPIRE = 24 * 60 * 60  # 24 hours
