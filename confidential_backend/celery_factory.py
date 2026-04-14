@@ -17,7 +17,7 @@ def celery_task(func):
         global __celery
         if __celery is not None:
             current_app.logger.warning("useful __celery found")
-            task = celery.task(func)
+            task = celery.task(name=f"{func.__module__}.{func.__name__}")(func)
             return task.delay(*args, **kwargs)
         else:
             current_app.logger.warning("__celery not found")
