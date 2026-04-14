@@ -16,9 +16,11 @@ def celery_task(func):
     def wrapper(*args, **kwargs):
         celery = current_app.extensions.get('celery')
         if celery:
+            current_app.logger.warning("current_app.extensions['celery'] found")
             task = celery.task(func)
             return task.delay(*args, **kwargs)
         else:
+            current_app.logger.warning("current_app.extensions['celery'] not found")
             return func(*args, **kwargs)
 
     return wrapper
@@ -33,6 +35,7 @@ def create_celery(flask_app=None):
     if not flask_app.config.get("USE_CELERY", False):
         current_app.logger.warning("USE_CELERY is set to False, celery will not be used")
         return None
+    current_app.logger.warning("USE_CELERY is set to True, celery will be used")
 
     Celery = get_celery_class()
     celery = Celery(
