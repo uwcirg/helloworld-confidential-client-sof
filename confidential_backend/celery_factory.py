@@ -14,13 +14,13 @@ def get_celery_class():
 def celery_task(func):
     """Decorator to register a celery task if enabled, or run synchronously"""
     def wrapper(*args, **kwargs):
-        celery = current_app.extensions.get('celery')
-        if celery:
-            current_app.logger.warning("current_app.extensions['celery'] found")
+        global __celery
+        if __celery is not None:
+            current_app.logger.warning("useful __celery found")
             task = celery.task(func)
             return task.delay(*args, **kwargs)
         else:
-            current_app.logger.warning("current_app.extensions['celery'] not found")
+            current_app.logger.warning("__celery not found")
             return func(*args, **kwargs)
 
     return wrapper
