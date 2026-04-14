@@ -31,6 +31,7 @@ def create_celery(flask_app=None):
 
     flask_app = flask_app or create_app()
     if not flask_app.config.get("USE_CELERY", False):
+        current_app.logger.warning("USE_CELERY is set to False, celery will not be used")
         return None
 
     Celery = get_celery_class()
