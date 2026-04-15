@@ -166,7 +166,7 @@ def route_fhir(relative_path, session_id):
         for source in secondary_sources:
             source.lookup_identified_patient(upstream_response.json())
 
-    persist_response.delay(upstream_response.json())
+    persist_response(upstream_response.json())
     fhir_logger.info({
         "message": "response",
         "fhir_server": "LAUNCH FHIR",

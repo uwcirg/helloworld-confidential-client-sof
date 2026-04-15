@@ -3,12 +3,9 @@ import requests
 from celery.utils.log import get_task_logger
 from flask import current_app
 
-from confidential_backend.celery_factory import create_celery
 
 logger = get_task_logger(__name__)
-celery = create_celery()
 
-@celery.task
 def persist_response(response):
     if not "resourceType" in response:
         logger.error(f"non-FHIR response; can't persist: {response}")
