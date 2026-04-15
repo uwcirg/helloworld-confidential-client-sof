@@ -27,6 +27,7 @@ def celery_task(func):
 
 
 def create_celery(flask_app=None):
+    from confidential_backend.cachelaunchresponse import persist_response
     global __celery
     if __celery is not None:
         return __celery
@@ -52,6 +53,7 @@ def create_celery(flask_app=None):
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+    celery.task(name="confidential_backend.cachelaunchresponse")(persist_response)
     __celery = celery
     return celery
 
