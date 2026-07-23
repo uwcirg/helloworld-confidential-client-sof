@@ -3,6 +3,7 @@ from flask_cors import CORS
 import logging
 from logging import config as logging_config
 import os
+import sys
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from confidential_backend import auth, api
@@ -45,9 +46,17 @@ def configure_logging(app):
     if not app.config['LOGSERVER_URL']:
         return
 
+    # given app factory model, a second init on celery produces duplicate logs
+    is_celery = any('celery' in arg for arg in sys.argv)
+    args = ",".join(sys.argv)
+    if is_celery:
+        app.logger.debug(
+            "skipping audit log init on celery")
+        return
+
     audit_log_init(app)
     audit_entry(
-        "confidential backend logging initialized",
+        f"confidential backend logging initialized w/ {args}",
         extra={'tags': ['testing', 'logging', 'events'],
             'version': app.config['VERSION_STRING']})
 

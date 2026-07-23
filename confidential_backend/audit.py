@@ -19,8 +19,9 @@ def audit_log_init(app):
     event_logger = logging.getLogger(EVENT_LOG_NAME)
     event_logger.setLevel(logging.INFO)
     event_logger.addHandler(log_server_handler)
+    event_logger.info("w/i audit_log_init")
 
-
+import time
 def audit_entry(message, level='info', extra=None):
     """Log entry, adding in session info such as active user"""
     try:
@@ -32,6 +33,7 @@ def audit_entry(message, level='info', extra=None):
     if extra is None:
         extra = {}
 
+    extra['when'] = f"{time.time()}"
     if has_app_context():
         for x in ('user', 'subject'):
             value = get_session_value(x)
