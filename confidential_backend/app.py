@@ -30,14 +30,31 @@ def create_app(testing=False, cli=False):
 
 
 def configure_logging(app):
-    app.logger  # must call to initialize prior to config or it'll replace
+    # Clear preexisting handlers attached by the framework to avoid double logging
+    # 1. Access the logger manager registry
+    logger_dict = logging.root.manager.loggerDict
 
+    # 2. Loop through every single initialized child logger
+    for logger_name, logger_obj in logger_dict.items():
+        if isinstance(logger_obj, logging.Logger):
+            # Clear all framework-attached handlers on this child
+            if logger_obj.handlers:
+                for handler in list(logger_obj.handlers):
+                    logger_obj.removeHandler(handler)
+
+            # Force the child to pass its logs up to the root configuration
+            logger_obj.propagate = True
+
+    # 3. Completely clear the root logger just in case
+    logging.getLogger().handlers = []
+
+    # 4. Now load logging.ini cleanly
     config = 'logging.ini'
     if not os.path.exists(config):
         # look above the testing dir when testing or debugging locally
         config = os.path.join('..', config)
-
     logging_config.fileConfig(config, disable_existing_loggers=False)
+
     app.logger.setLevel(getattr(logging, app.config['LOG_LEVEL'].upper()))
     app.logger.debug(
         "confidential backend logging initialized",
@@ -46,15 +63,8 @@ def configure_logging(app):
     if not app.config['LOGSERVER_URL']:
         return
 
-    # given app factory model, a second init on celery produces duplicate logs
-    is_celery = any('celery' in arg for arg in sys.argv)
-    args = ",".join(sys.argv)
-    if is_celery:
-        app.logger.debug(
-            "skipping audit log init on celery")
-        return
-
     audit_log_init(app)
+    args = ",".join(sys.argv)
     audit_entry(
         f"confidential backend logging initialized w/ {args}",
         extra={'tags': ['testing', 'logging', 'events'],
