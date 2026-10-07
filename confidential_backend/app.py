@@ -53,8 +53,8 @@ def configure_logging(app):
     if not os.path.exists(config):
         # look above the testing dir when testing or debugging locally
         config = os.path.join('..', config)
-    logging_config.fileConfig(config, disable_existing_loggers=False)
 
+    logging_config.fileConfig(config, disable_existing_loggers=False)
     app.logger.setLevel(getattr(logging, app.config['LOG_LEVEL'].upper()))
     app.logger.debug(
         "confidential backend logging initialized",
