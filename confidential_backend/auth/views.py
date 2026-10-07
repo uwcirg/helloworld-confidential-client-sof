@@ -224,12 +224,13 @@ def authorize():
 
     iss = session['iss']
     current_app.logger.debug('iss from session: %s', iss)
-    audit_entry("launch")
+
     session['token_response'] = token_response
 
     frontend_url = current_app.config['LAUNCH_DEST']
 
     current_app.logger.debug('redirecting to frontend app: %s', frontend_url)
+    audit_entry("launch")
     return redirect(frontend_url)
 
 
