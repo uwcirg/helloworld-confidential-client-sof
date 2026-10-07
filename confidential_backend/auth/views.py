@@ -173,7 +173,6 @@ def launch():
         if launch_token_provider:
             session['user'] = f"Provider/{launch_token_provider}"
             extra['user'] = session['user']
-        audit_entry("launch", extra=extra)
         session['launch_token_patient'] = launch_token_patient
 
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
@@ -228,7 +227,7 @@ def authorize():
 
     iss = session['iss']
     current_app.logger.debug('iss from session: %s', iss)
-
+    audit_entry("launch")
     session['token_response'] = token_response
 
     frontend_url = current_app.config['LAUNCH_DEST']
