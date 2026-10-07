@@ -64,11 +64,13 @@ def configure_logging(app):
         return
 
     audit_log_init(app)
-    args = ",".join(sys.argv)
-    audit_entry(
-        f"confidential backend logging initialized w/ {args}",
-        extra={'tags': ['testing', 'logging', 'events'],
-            'version': app.config['VERSION_STRING']})
+    debugging_audit_log = False
+    if debugging_audit_log:
+        args = ",".join(sys.argv)
+        audit_entry(
+            f"confidential backend logging initialized w/ {args}",
+            extra={'tags': ['testing', 'logging', 'events'],
+                'version': app.config['VERSION_STRING']})
 
 
 def configure_extensions(app, cli):
