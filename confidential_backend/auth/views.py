@@ -165,10 +165,12 @@ def launch():
 
         launch_token_patient = payload.get(LAUNCH_VALUE_TO_CODE['patient'])
         if launch_token_patient:
+            current_app.logger.debug("SURPRISE, found subject at /launch")
             session['subject'] = f"Patient/{launch_token_patient}"
 
         launch_token_provider = payload.get(LAUNCH_VALUE_TO_CODE['provider'])
         if launch_token_provider:
+            current_app.logger.debug("SURPRISE, found user at /launch")
             session['user'] = f"Provider/{launch_token_provider}"
         session['launch_token_patient'] = launch_token_patient
 
@@ -211,13 +213,10 @@ def authorize():
     # https://github.com/lepture/authlib/blob/master/authlib/oauth2/client.py#L154
     token_response = oauth.sof.authorize_access_token(_format='json')
     extracted_id_token = extract_payload(token_response.get('id_token'))
-    username = extracted_id_token.get('preferred_username')
 
-    # standalone uses profile
-    if 'profile' in extracted_id_token:
-        session['user'] = session.get('user', extracted_id_token['profile'])
-    else:
-        session['user'] = session.get('user', {'username': username})
+    # fhirUser: standard claim in SoF, points to the specific FHIR
+    # resource representing the authenticated user
+    session['user'] = extracted_id_token.get('fhirUser', "fhirUser not in JWT")
 
     if 'patient' in token_response:
         session['subject'] = session.get('subject', 'Patient/{}'.format(token_response['patient']))
