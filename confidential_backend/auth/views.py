@@ -217,6 +217,9 @@ def authorize():
     # fhirUser: standard claim in SoF, points to the specific FHIR
     # resource representing the authenticated user
     session['user'] = extracted_id_token.get('fhirUser', "fhirUser not in JWT")
+    if not extracted_id_token.get('fhirUser') and extracted_id_token.get('preferred_username'):
+        # support keycloak claim, where a FHIR resource representing auth user may not exist
+        session['user'] = extracted_id_token.get('preferred_username')
 
     if 'patient' in token_response:
         session['subject'] = session.get('subject', 'Patient/{}'.format(token_response['patient']))
