@@ -5,6 +5,7 @@ functions to simplify adding context and extra data to log messages destined for
 from copy import deepcopy
 from flask import current_app, has_app_context
 import logging
+import time
 
 from confidential_backend.logserverhandler import LogServerHandler
 from confidential_backend.wrapped_session import get_session_value
@@ -32,6 +33,7 @@ def audit_entry(message, level='info', extra=None):
     if extra is None:
         extra = {}
 
+    extra['when'] = f"{time.time()}"
     if has_app_context():
         for x in ('user', 'subject'):
             value = get_session_value(x)
