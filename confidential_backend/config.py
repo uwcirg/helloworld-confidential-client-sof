@@ -56,4 +56,5 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG').upper()
 
 LAUNCH_DEST = os.getenv("LAUNCH_DEST")
 
+USE_CELERY = os.getenv("USE_CELERY", "false").lower() == "true"
 VERSION_STRING = os.getenv("VERSION_STRING")
