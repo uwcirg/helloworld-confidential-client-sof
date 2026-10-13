@@ -9,25 +9,6 @@ from confidential_backend.auth.helpers import extract_payload, format_as_jwt
 from confidential_backend.extensions import oauth
 
 
-# SMIT launch token encoding scheme
-# https://github.com/smart-on-fhir/smart-launcher/blob/master/static/codec.js#L4-L17
-# launch tokens are typically opaque to the SoF client app
-LAUNCH_VALUE_TO_CODE = {
-    "launch_ehr": "a",
-    "patient": "b",
-    "encounter": "c",
-    "auth_error": "d",
-    "provider": "e",
-    "sim_ehr": "f",
-    "select_encounter": "g",
-    "launch_prov": "h",
-    "skip_login": "i",
-    "skip_auth": "j",
-    "launch_pt": "k",
-    "launch_cds": "l",
-}
-
-
 # A number of undesired attributes from the auth token - removed before logging
 AUTH_TOKEN_LOG_FILTER = (
     "access_token",
@@ -157,23 +138,6 @@ def launch():
         # launch value received from EHR
         current_app.logger.debug('launch: %s', launch)
 
-        # Extract user and subject from encoded launch parameter if found
-        # NB this is documented to be ``an opaque handle to the EHR context
-        # is passed along to the app as part of the launch URL``
-        # the SMIT Sandbox (and fEMR) use a base64 encoded JSON object
-        payload = extract_payload(format_as_jwt(launch))
-
-        launch_token_patient = payload.get(LAUNCH_VALUE_TO_CODE['patient'])
-        if launch_token_patient:
-            current_app.logger.debug("SURPRISE, found subject at /launch")
-            session['subject'] = f"Patient/{launch_token_patient}"
-
-        launch_token_provider = payload.get(LAUNCH_VALUE_TO_CODE['provider'])
-        if launch_token_provider:
-            current_app.logger.debug("SURPRISE, found user at /launch")
-            session['user'] = f"Provider/{launch_token_provider}"
-        session['launch_token_patient'] = launch_token_patient
-
     sof_client_params = discover_sof_client_params(fhir_base_url=iss)
     oauth.register(**sof_client_params)
 
@@ -254,7 +218,6 @@ def authorize():
 def auth_info():
     token_response = session['token_response']
     iss = session['iss']
-    launch_token_patient = session['launch_token_patient']
     session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
     return {
         # debugging
@@ -271,8 +234,7 @@ def auth_info():
             relative_path='',
             _external=True
         ),
-        # fallback to patient obtained from non-opaque (non-standard) launch token
-        "patientId":token_response.get('patient', launch_token_patient),
+        "patientId":token_response.get('patient'),
     }
 
 
