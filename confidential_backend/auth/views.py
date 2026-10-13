@@ -218,7 +218,6 @@ def authorize():
 def auth_info():
     token_response = session['token_response']
     iss = session['iss']
-    launch_token_patient = session['launch_token_patient']
     session_id = request.cookies.get(current_app.config['SESSION_COOKIE_NAME'])
     return {
         # debugging
@@ -235,8 +234,7 @@ def auth_info():
             relative_path='',
             _external=True
         ),
-        # fallback to patient obtained from non-opaque (non-standard) launch token
-        "patientId":token_response.get('patient', launch_token_patient),
+        "patientId":token_response.get('patient'),
     }
 
 
