@@ -72,8 +72,8 @@ def route_fhir(relative_path, session_id):
         # query string parameters, the route parsing fails to pick them up.  rebuild
         relative_path = '?' + request.query_string.decode() if request.query_string else ''
 
-    # prefer patient ID baked into access token JWT by EHR; fallback to initial transparent launch token for fEMR
-    patient_id = get_session_value('token_response', {}).get('patient') or get_session_value('launch_token_patient')
+    # use patient ID baked into access token JWT by EHR
+    patient_id = get_session_value('token_response', {}).get('patient')
     if not patient_id:
         return jsonify_abort(status_code=400, message="no patient ID found in session; can't continue")
 
