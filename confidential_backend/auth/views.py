@@ -192,10 +192,14 @@ def authorize():
         raise http_err
 
     if 'patient' not in token_response and 'launch_patient' in session:
-        # keycloak doesn't include the launch patient in the JWT thus it is
-        # included as a query string parameter on /launch (and captured therein in the session)
+        # keycloak doesn't package the launch context (in particular, the patient) with
+        # the access_token as per SoF [spec](https://build.fhir.org/ig/HL7/smart-app-launch/en/scopes-and-launch-context.html#launch-context-arrives-with-your-access_token),
+        # thus it is included as a query string parameter on /launch (and captured therein in the session)
         # in such a case, push the patient into token_response for consistent use elsewhere
         token_response['patient'] = session['launch_patient']
+
+    if 'patient' not in token_response:
+        return "patient not defined in launch context; can't continue", 422
 
     extracted_id_token = extract_payload(token_response.get('id_token'))
 
