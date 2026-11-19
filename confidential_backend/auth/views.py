@@ -129,6 +129,8 @@ def launch():
     # being the effective reset from any previous launch, clear session data
     session.clear()
 
+    if 'patient' in request.args:
+        session['launch_patient'] = request.args['patient']
     iss = request.args['iss']
     current_app.logger.debug('iss from EHR: %s', iss)
     session['iss'] = iss
@@ -189,6 +191,16 @@ def authorize():
 
         raise http_err
 
+    if 'patient' not in token_response and 'launch_patient' in session:
+        # keycloak doesn't package the launch context (in particular, the patient) with
+        # the access_token as per SoF [spec](https://build.fhir.org/ig/HL7/smart-app-launch/en/scopes-and-launch-context.html#launch-context-arrives-with-your-access_token),
+        # thus it is included as a query string parameter on /launch (and captured therein in the session)
+        # in such a case, push the patient into token_response for consistent use elsewhere
+        token_response['patient'] = session['launch_patient']
+
+    if 'patient' not in token_response:
+        return "patient not defined in launch context; can't continue", 422
+
     extracted_id_token = extract_payload(token_response.get('id_token'))
 
     # fhirUser: standard claim in SoF, points to the specific FHIR
@@ -199,7 +211,7 @@ def authorize():
         session['user'] = extracted_id_token.get('preferred_username')
 
     if 'patient' in token_response:
-        session['subject'] = session.get('subject', 'Patient/{}'.format(token_response['patient']))
+        session['subject'] = 'Patient/{}'.format(token_response['patient'])
 
     iss = session['iss']
     current_app.logger.debug('iss from session: %s', iss)
