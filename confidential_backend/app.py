@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from confidential_backend import auth, api
 from confidential_backend.audit import audit_entry, audit_log_init
 from confidential_backend.dynamic_factory import load_strategies
-from confidential_backend.extensions import oauth, secondary_sources, sess
+from confidential_backend.extensions import oauth, secondary_sources, sess, response_filters
 
 
 def create_app(testing=False, cli=False):
@@ -25,6 +25,7 @@ def create_app(testing=False, cli=False):
     register_blueprints(app)
     configure_proxy(app)
     configure_secondary_sources(app)
+    configure_response_filters(app)
 
     return app
 
@@ -109,3 +110,14 @@ def configure_secondary_sources(app):
         # avoid pushing duplicates as factory calls for app and celery stack
         if not any(s.name == strat.name for s in secondary_sources):
             secondary_sources.append(strat)
+
+
+def configure_response_filters(app):
+    from confidential_backend.response_filters.extracted_observation import ExtractedObservationFilter
+    app_fhir_url = app.config.get("APP_FHIR_URL")
+    identifier_system = app.config.get("UPSTREAM_FHIR_URL")  # mirrors fishmouth convention
+    if app_fhir_url and identifier_system:
+        response_filters.append(
+            ExtractedObservationFilter(app_fhir_url=app_fhir_url, identifier_system=identifier_system)
+        )
+

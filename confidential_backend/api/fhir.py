@@ -5,7 +5,7 @@ from flask_cors import cross_origin
 from fhir.smart.scopes import scopes
 
 from confidential_backend import PROXY_HEADERS
-from confidential_backend.extensions import secondary_sources
+from confidential_backend.extensions import response_filters, secondary_sources
 from confidential_backend.fhirresourcelogger import getLogger
 from confidential_backend.jsonify_abort import jsonify_abort
 from confidential_backend.scope import request_allowed, request_scope
@@ -172,4 +172,11 @@ def route_fhir(relative_path, session_id):
         "fhir_server": "LAUNCH FHIR",
         "fhir": upstream_response.json()})
 
-    return upstream_response.json(), upstream_response.status_code
+    # Apply any registered response filters
+    response_json = upstream_response.json()
+    for f in response_filters:
+        resource_type = relative_path.split("?")[0].split("/")[0] or "Unknown"
+        if f.applies_to(resource_type):
+            response_json = f.filter(response_json)
+
+    return response_json, upstream_response.status_code
